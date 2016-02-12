@@ -107,7 +107,7 @@ def update_user_status(conversation_id, user_id):
     return flask.json.jsonify(response)
 
 
-@app.route('/add_message/<string:conversation_id/<string:user_id>',
+@app.route('/add_message/<string:conversation_id>/<string:user_id>',
            methods=['POST'])
 def add_message(conversation_id, user_id):
     """Adds a message to the conversation as a given user.
@@ -122,14 +122,14 @@ def add_message(conversation_id, user_id):
     """
 
     author = model.User.query.get(user_id)
-    if author.conversation_id != conversation_id:
+    print author
+    if author.conversation_id != int(conversation_id):
         response = {
-                success: False,
-                error: "You don't have permission to send meesages in "
+                'success': False,
+                'error': "You don't have permission to send meesages in "
                             "this chat."
                 }
-        return flask.json.jsonify(response), status.HTTP_403_FORBIDDEN
-
+        return flask.json.jsonify(response), 403 
     message_text = flask.request.form.get('encoded_message')
     reciever = flask.request.form.get('to_user_id')
     new_message = model.Message(author_id=author.user_id,
@@ -137,6 +137,8 @@ def add_message(conversation_id, user_id):
                                 message=message_text)
     model.db.session.add(new_message)
     model.db.session.commit()
+
+    return flask.json.jsonify({'success': True, 'error': None})
 
 
 if __name__ == '__main__':
