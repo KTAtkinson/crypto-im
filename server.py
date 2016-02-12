@@ -46,7 +46,7 @@ def update_user_status(conversation_id, user_id):
 
     Args:
         conversation_id: <str> the conversation code for which this user's
-           status should be www.
+           status should be updated.
         user_id: <int> the user id to update.
 
     Returns:
@@ -107,19 +107,35 @@ def update_user_status(conversation_id, user_id):
     return flask.json.jsonify(response)
 
 
-@app.route('/add_message/<string:conversation_id>', methods=['POST'])
-def add_message(conversation_id):
+@app.route('/add_message/<string:conversation_id/<string:user_id>',
+           methods=['POST'])
+def add_message(conversation_id, user_id):
     """Adds a message to the conversation as a given user.
 
     Args:
         conversation_id: <str> the conversation code for the conversation
-            for which the message wwhould be added.
+            for which the message would be added..
+        user_id: <str> user id for the user who is sending the message.
 
     Returns:
         response: <str> json verifing that the message was posted.
     """
 
-    raise NotImplementedError
+    author = model.User.query.get(user_id)
+    if author.conversation_id != conversation_id:
+        response = {success: False,
+                    error: "You don't have permission to send meesages in "
+                            "this chat."
+                    }
+        return flask.json.jsonify(response), status.HTTP_403_FORBIDDEN
+
+    message_text = flask.request.form.get('encoded_message')
+    reciever = flask.request.form.get('to_user_id')
+    new_message = model.Message(author_id=author.user_id,
+                                recipient_id=reciever,
+                                message=message_text)
+    model.db.session.add(new_message)
+    model.db.session.commit()
 
 
 if __name__ == '__main__':
