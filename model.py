@@ -16,7 +16,11 @@ class User(db.Model):
     user_id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(25))
     public_key = db.Column(db.Text())
-    last_seen = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
+    last_seen = db.Column(db.DateTime(timezone=True), default=datetime.datetime.now)
+    conversation_id = db.Column(
+            db.Integer,
+            db.ForeignKey('conversations.conversation_id'),
+            nullable=False)
 
 
 class Conversation(db.Model):
@@ -32,11 +36,10 @@ class Message(db.Model):
 
     __tablename__ = "messages"
     message_id = db.Column(db.Integer, primary_key=True)
-    conversation_id = db.Column(db.Integer, db.ForeignKey('conversations.conversation_id'), nullable=False)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime(timezone=True), default=datetime.datetime.utcnow)
+    timestamp = db.Column(db.DateTime(), default=datetime.datetime.now)
 
     author = db.relationship('User',
                              foreign_keys='Message.author_id',
@@ -44,6 +47,10 @@ class Message(db.Model):
     recipient = db.relationship('User',
                                 foreign_keys='Message.recipient_id',
                                 backref=db.backref('recieved_messages'))
+
+    @classmethod
+    def get_by_message_id(cls, message_id):
+        return cls.query.get(message_id)
 
 
 # The following code was borrowed from a Hackbright skiills assessment on
