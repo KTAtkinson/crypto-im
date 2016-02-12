@@ -123,10 +123,11 @@ def add_message(conversation_id, user_id):
 
     author = model.User.query.get(user_id)
     if author.conversation_id != conversation_id:
-        response = {success: False,
-                    error: "You don't have permission to send meesages in "
+        response = {
+                success: False,
+                error: "You don't have permission to send meesages in "
                             "this chat."
-                    }
+                }
         return flask.json.jsonify(response), status.HTTP_403_FORBIDDEN
 
     message_text = flask.request.form.get('encoded_message')
