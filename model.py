@@ -13,7 +13,7 @@ class User(db.Model):
     """Models a chat client user."""
 
     __tablename__ = "users"
-    user_id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     name = db.Column(db.String(25))
     public_key = db.Column(db.Text())
     last_seen = db.Column(db.DateTime(timezone=True), default=datetime.datetime.now)
@@ -27,7 +27,8 @@ class Conversation(db.Model):
     """Model for a chat conversation."""
 
     __tablename__ = "conversations"
-    conversation_id = db.Column(db.Integer, primary_key=True)
+    conversation_id = db.Column(db.Integer, autoincrement=True,
+                                primary_key=True)
     conversation_code = db.Column(db.String(20))
 
 
@@ -35,7 +36,7 @@ class Message(db.Model):
     """Model for a chat message."""
 
     __tablename__ = "messages"
-    message_id = db.Column(db.Integer, primary_key=True)
+    message_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
     author_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
