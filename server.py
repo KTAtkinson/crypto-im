@@ -6,6 +6,7 @@ import pytz
 import jinja2
 import flask
 import flask_debugtoolbar
+from sqlalchemy.orm.exc import NoResultFound
 
 import model
 
@@ -37,7 +38,37 @@ def join_chat(conversation_code):
        response: <str> json encoded, indicating if the join was successful or not.
     """
 
-    raise NotImplementedError
+    try:
+        conversation = model.Conversation.query.filter_by(
+                conversation_code=conversation_code).one()
+    except NoResultFound:
+        conversation = model.Conversation(conversation_code=conversation_code)
+        model.db.session.add(conversation)
+        model.db.session.commit()
+
+    user_query = model.User.query.filter_by(
+            conversation_id=conversation.conversation_id)
+    num_users = user_query.count()
+
+    if num_users > 1:
+        response = {
+                'success': False,
+                'error': 'There is no room in this converstaion.'}
+        return flask.json.jsonify(response), 400
+
+    name = flask.request.form.get('name')
+    pkey = flask.request.form.get('public_key')
+    new_user = model.User(name=name, public_key=pkey,
+                          conversation_id=conversation.conversation_id)
+    model.db.session.add(new_user)
+    model.db.session.commit()
+
+    response = {
+            'success': True,
+            'error': '',
+            'new_user_id': new_user.user_id
+            }
+    return flask.json.jsonify(response)
 
 
 @app.route('/status/<string:conversation_id>/<int:user_id>', methods=['POST'])
