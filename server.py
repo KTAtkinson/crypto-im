@@ -23,7 +23,8 @@ app.jinja_env.undefined = jinja2.StrictUndefined
 def get_chat_page(conversation_code):
     """Get the HTML for the chat page."""
 
-    return flask.render_template('chat_page.html')
+    return flask.render_template('chat_page.html',
+                                 conversation_code=conversation_code)
 
 
 @app.route('/join/<string:conversation_code>', methods=['POST'])
