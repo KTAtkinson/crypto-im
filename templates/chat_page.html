@@ -3,8 +3,9 @@
 <head>
 </head>
 <body>
-<form>
+<form id="add-user">
     <label>Name: <input name="name" type="text"></label>
+    <span class="error" hidden></span>
     <input type="submit" value="Start chatting!">
 </form>
 <div class="content" id="conversation" data-ccode="{{conversation_code}}">
