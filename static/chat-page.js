@@ -21,12 +21,11 @@ function joinSuccess(data) {
 }
 
 
-function joinChat(evt) {
+unction joinChat(evt) {
     evt.preventDefault();
-    window.form = evt.target;
 
     var request = {
-        name: $('form input[name="name"]').val(),
+        name: $('form input[name="name"').val(),
         // Adding public key as empty string for now.
         public_key: ''
         };
