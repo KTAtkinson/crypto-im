@@ -3,12 +3,17 @@
 <head>
 </head>
 <body>
-<form id="add-user">
+<form id="add-user-form">
     <label>Name: <input name="name" type="text"></label>
     <span class="error" hidden></span>
     <input type="submit" value="Start chatting!">
 </form>
-<div class="content" id="conversation" data-ccode="{{conversation_code}}">
+<div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+    <div id="coversation">Conversation appears here!</div>
+    <form id="send-message-form">
+        <input type="text" name="message" placeholder="Send a message...">
+        <input type="submit" value="Send message">
+    </form>
 </div>
 <script src="https://code.jquery.com/jquery.js"></script>
 <script src="/static/chat-page.js"></script>

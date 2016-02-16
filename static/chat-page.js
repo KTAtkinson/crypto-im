@@ -12,6 +12,15 @@ function addError(resp) {
 }
 
 
+function joinSuccess(data) {
+    window.user_id = data.new_user_id;
+    window.c_id = data.conversation_id;
+    console.log(c_id);
+    $("#add-user-form").hide();
+    $("#conversation-pane").show();
+}
+
+
 function joinChat(evt) {
     evt.preventDefault();
     window.form = evt.target;
@@ -28,12 +37,10 @@ function joinChat(evt) {
         'method': 'POST'
         })
         .always(beforeFormSubmit)
-        .success(function(data) {
-            window.user_id = data.new_user_id;
-            })
+        .success(joinSuccess)
         .fail(addError);
 }
 
 
-var c_code = $('#conversation').data('ccode');
+var c_code = $('#conversation-pane').data('ccode');
 $('form').submit(joinChat);

@@ -67,7 +67,8 @@ def join_chat(conversation_code):
     response = {
             'success': True,
             'error': '',
-            'new_user_id': new_user.user_id
+            'new_user_id': new_user.user_id,
+            'conversation_id': new_user.conversation_id,
             }
     return flask.json.jsonify(response)
 
