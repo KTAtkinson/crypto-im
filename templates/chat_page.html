@@ -9,9 +9,10 @@
     <input type="submit" value="Start chatting!">
 </form>
 <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
-    <div id="coversation">Conversation appears here!</div>
+    <div id="conversation"></div>
     <form id="send-message-form">
         <input type="text" name="message" placeholder="Send a message...">
+        <span class="error" hidden></span>
         <input type="submit" value="Send message">
     </form>
 </div>
