@@ -1,22 +1,22 @@
-<!doctyle text/html>
-<html>
-<head>
-</head>
-<body>
-<form id="add-user-form">
-    <label>Name: <input name="name" type="text"></label>
-    <span class="error" hidden></span>
-    <input type="submit" value="Start chatting!">
-</form>
-<div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
-    <div id="conversation"></div>
-    <form id="send-message-form">
-        <input type="text" name="message" placeholder="Send a message...">
+{% extends "base.html" %}
+
+{% block header %}
+    {{ conversation_code }}
+{% endblock %}
+
+
+{% block content %}
+    <form id="add-user-form">
+        <label>Name: <input name="name" type="text"></label>
         <span class="error" hidden></span>
-        <input type="submit" value="Send message">
+        <input type="submit" value="Start chatting!">
     </form>
-</div>
-<script src="https://code.jquery.com/jquery.js"></script>
-<script src="/static/chat-page.js"></script>
-</body>
-</html>
+    <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+        <div id="conversation"></div>
+        <form id="send-message-form">
+            <input type="text" name="message" placeholder="Send a message...">
+            <span class="error" hidden></span>
+            <input type="submit" value="Send message">
+        </form>
+    </div>
+{% endblock %}

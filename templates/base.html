@@ -1,0 +1,29 @@
+<!doctyle text/html>
+<html>
+<head>
+    <title>chat</title>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container-fluid">
+            <span class="col-md-2 glyphicon glyphicon glyphicon-comment"></span>
+            <span class="col-md-6">
+                {% block header %}{% endblock %}
+            </span>
+            <span class="col-md-4">
+                <a href="" aria-label="About chat"><span class="glyphicon glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
+                <a href="" aria-label="New chat"><span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span></a>
+            </span>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+<script src="https://code.jquery.com/jquery.js"></script>
+<script src="/static/chat-page.js"></script>
+</body>
+</html>
