@@ -13,10 +13,20 @@
     </form>
     <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
         <div id="conversation"></div>
-        <form id="send-message-form">
-            <input type="text" name="message" placeholder="Send a message...">
-            <span class="error" hidden></span>
-            <input type="submit" value="Send message">
-        </form>
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="container">
+            <form id="send-message-form">
+                <div class="input-group input-group-lg">
+                  <textarea class="form-control" name="message" placeholder="Send a message...."></textarea>
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <span class="glyphicon glyphicon-send"></span>
+                    </button>
+                  </span>
+                </div><!-- /input-group -->
+                <span class="error" hidden></span>
+            </form>
+        </div>
+    </nav>
     </div>
 {% endblock %}

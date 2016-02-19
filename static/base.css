@@ -1,0 +1,35 @@
+body {
+    padding-top:90px;
+    padding-bottom: 100px;
+}
+
+.navbar {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    font-size: 2em;
+}
+
+.navbar .center {
+    text-align: center;
+}
+
+.navbar .right {
+    text-align: right;
+}
+
+.navbar .glyphicon {
+    color: rgb(51, 122, 183)
+}
+
+.message-content .author {
+    font-weight: bold;
+    font-size: .75em;
+}
+    
+.chat-message .user-image {
+    font-size: 2em;
+}
+
+.chat-message {
+    padding-bottom: 15px;
+}

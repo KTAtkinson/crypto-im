@@ -1,6 +1,6 @@
 function sendMessage(evt) {
     evt.preventDefault();
-    var messageInput = evt.target.querySelector('input[name="message"]');
+    var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
     console.log(user_id, messageText);
     
@@ -68,13 +68,38 @@ function pollForMessages(conversation_id, user_id, interval) {
                 for (var i = 0; i < newMessages.length; i++) {
                     var rawMessage = newMessages[i];
                     console.log(rawMessage);
-                    var newMessage = document.createElement('div');
-                    $(newMessage)
+                    var newEntry = document.createElement('div');
+                    $(newEntry)
                         .addClass('chat-message')
-                        .text(rawMessage.sender_name + ": " + rawMessage.message)
+                        .addClass('container')
                         .attr('data-mid', rawMessage.message_id)
-                    chatStream.appendChild(newMessage);
-                    $('#conversation-pane').get(0).querySelector('message');
+                    var userImage = document.createElement('span');
+                    $(userImage)
+                        .addClass("user-image")
+                        .addClass("glyphicon glyphicon-user")
+                        .addClass('col-md-1');
+                    newEntry.appendChild(userImage)
+
+                    var msgContent = document.createElement("div");
+                    $(msgContent)
+                        .addClass("message-content")
+                        .addClass("col-md-11");
+                    newEntry.appendChild(msgContent);
+
+                    var authorName = document.createElement("div");
+                    $(authorName)
+                        .addClass("author")
+                        .text(rawMessage.sender_name);
+                    msgContent.appendChild(authorName);
+
+                    var msgText = document.createElement("div");
+                    $(msgText)
+                        .addClass("message")
+                        .text(rawMessage.message);
+                    msgContent.appendChild(msgText);
+
+                    chatStream.appendChild(newEntry);
+                    window.scrollTo(0, document.body.scrollHeight);
                 }
 
                 window.conversation_users = resp.users
