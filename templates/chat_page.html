@@ -7,9 +7,20 @@
 
 {% block content %}
     <form id="add-user-form">
-        <label>Name: <input name="name" type="text"></label>
+        <fieldset class="form-group">
+            <label>Name:</label>
+            <input class="form-control" name="name" type="text">
+        </fieldset>
+        <fieldset class="form-group">
+            <label>Public key:</label>
+            <textarea class="form-control" name="pkey" placeholder="Paste your RSA public key here...."></textarea>
+        </fieldset>
+        <fieldset class="form-group">
+            <label>Private key:</label>
+            <textarea class="form-control" name="private-key" placeholder="Paste your RSA private key here..."></textarea>
+        </fieldset>
         <span class="error" hidden></span>
-        <input type="submit" value="Start chatting!">
+        <input class="form-control" type="submit" value="Start chatting">
     </form>
     <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
         <div id="conversation"></div>

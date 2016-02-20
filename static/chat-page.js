@@ -45,7 +45,7 @@ function sendMessage(evt) {
  
 
 function pollForMessages(conversation_id, user_id, interval) {
-    last_message_id = $('#conversation .chat-message:last').data('mid') || null;
+    var last_message_id = $('#conversation .chat-message:last').data('mid') || null;
     request = {
             'public_key': '',
             'last_message_seen_id': last_message_id
@@ -134,12 +134,15 @@ function joinSuccess(data) {
 
 function joinChat(evt) {
     evt.preventDefault();
-    window.form = $('#add-user-form');
+    window.form = evt.currentTarget;
+    var public_key = $(form.querySelector('textarea[name="pkey"]')).val();
+    window.private_key = $(form.querySelector('textarea[name="private-key"]')).val();
+
 
     var request = {
         name: $('form input[name="name"').val(),
         // Adding public key as empty string for now.
-        public_key: ''
+        public_key: public_key
         };
     console.log(request);
     $.ajax({
