@@ -1,11 +1,13 @@
-window.crypto.subtle.generateKey = function(args) {
+window.crypto.subtle.generateKey = function(algo, extractable, key_ops) {
     return {
-        key: args['key_string'],
-        encrypt: function(msg) {
-            return this.key.concat('*//*', msg)
+        key_string: 'testkeydontuse',
+        encrypt: function(alg, key, data) {
+            return this.key_string.concat('*//*', msg)
             },
-        decrypt: function(msg) {
+        decrypt: function(alg, key, data) {
             return msg.split('*//*')[1];
             },
+        public_key: {},
+        private_key: {},
     }
 }
