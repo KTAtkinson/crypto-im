@@ -1,5 +1,6 @@
 function strToArrayBufferView(str) {
-    return Uint8Array(str
+    console.log(str);
+    return new Uint8Array(str
             .split('')
             .map( function(e) { return e.charCodeAt(0)}));
 }
