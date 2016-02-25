@@ -88,6 +88,7 @@ def update_user_status(conversation_id, user_id):
             conversation, and any new messages for the user.
     """
     pkey = flask.request.form.get('public_key')
+    print "AVAILABLE FORM FIELDS:", flask.request.form.keys()
     user = model.User.query.get(user_id)
     user.public_key = pkey
     user.last_seen = datetime.datetime.now(tz=pytz.utc)
