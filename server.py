@@ -1,6 +1,7 @@
 """Chat server"""
 
 import datetime
+import json
 
 import pytz
 import jinja2
@@ -24,7 +25,8 @@ app.jinja_env.undefined = jinja2.StrictUndefined
 def get_chat_page(conversation_code):
     """Get the HTML for the chat page."""
 
-    raise NotImplementedError
+    return flask.render_template('chat_page.html',
+                                 conversation_code=conversation_code)
 
 
 @app.route('/join/<string:conversation_code>', methods=['POST'])
@@ -53,7 +55,7 @@ def join_chat(conversation_code):
     if num_users > 1:
         response = {
                 'success': False,
-                'error': 'There is no room in this converstaion.'}
+                'error': 'There is no room in this conversation.'}
         return flask.json.jsonify(response), 400
 
     name = flask.request.form.get('name')
@@ -66,7 +68,8 @@ def join_chat(conversation_code):
     response = {
             'success': True,
             'error': '',
-            'new_user_id': new_user.user_id
+            'new_user_id': new_user.user_id,
+            'conversation_id': new_user.conversation_id,
             }
     return flask.json.jsonify(response)
 
@@ -90,15 +93,18 @@ def update_user_status(conversation_id, user_id):
     user.last_seen = datetime.datetime.now(tz=pytz.utc)
     model.db.session.add(user)
 
-    # print 'found and updated user.'
+    # print 'found and updated user.
     last_msg_seen_id = flask.request.form.get('last_message_seen_id')
 
     print "Getting message."
-    last_message = model.Message.query.get(last_msg_seen_id)
+    if last_msg_seen_id:
+        last_message_time = model.Message.query.get(last_msg_seen_id).timestamp
+    else:
+        last_message_time = datetime.datetime(1970, 1, 1, tzinfo=pytz.utc)
 
     # TODO: Move query to model.Message.
     query = model.db.session.query(model.Message).filter(
-             model.Message.timestamp > last_message.timestamp,
+             model.Message.timestamp > last_message_time,
              model.User.conversation_id==conversation_id,
              model.Message.recipient_id==user_id)
     query = query.order_by(model.Message.timestamp)
@@ -109,7 +115,8 @@ def update_user_status(conversation_id, user_id):
     for message in new_messages:
         message_dict = {
                 'sender_name': message.author.name,
-                'message': message.message
+                'message': message.message,
+                'message_id': message.message_id
                 }
         new_message_dict_list.append(message_dict)
 
@@ -152,6 +159,7 @@ def add_message(conversation_id, user_id):
         response: <str> json verifing that the message was posted.
     """
 
+    request = json.loads(flask.request.form.keys()[0])
     author = model.User.query.get(user_id)
     print author
     if author.conversation_id != int(conversation_id):
@@ -161,12 +169,12 @@ def add_message(conversation_id, user_id):
                             "this chat."
                 }
         return flask.json.jsonify(response), 403 
-    message_text = flask.request.form.get('encoded_message')
-    reciever = flask.request.form.get('to_user_id')
-    new_message = model.Message(author_id=author.user_id,
-                                recipient_id=reciever,
-                                message=message_text)
-    model.db.session.add(new_message)
+
+    for message in request.get('encoded_messages'):
+        new_message = model.Message(author_id=user_id,
+                                    recipient_id=message['user_id'],
+                                    message=message['encoded_message'])
+        model.db.session.add(new_message)
     model.db.session.commit()
 
     return flask.json.jsonify({'success': True, 'error': None})
@@ -177,7 +185,6 @@ if __name__ == '__main__':
     app.add_debug = True
 
     model.connect_to_db(app)
-
     # Add the debug toolbar.
     flask_debugtoolbar.DebugToolbarExtension(app)
 

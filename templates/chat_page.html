@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block header %}
+    {{ conversation_code }}
+{% endblock %}
+
+
+{% block content %}
+    <form id="add-user-form">
+        <label>Name: <input name="name" type="text"></label>
+        <span class="error" hidden></span>
+        <input type="submit" value="Start chatting!">
+    </form>
+    <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+        <div id="conversation"></div>
+    <nav class="navbar navbar-default navbar-fixed-bottom">
+        <div class="container">
+            <form id="send-message-form">
+                <div class="input-group input-group-lg">
+                  <textarea class="form-control" name="message" placeholder="Send a message...."></textarea>
+                  <span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">
+                        <span class="glyphicon glyphicon-send"></span>
+                    </button>
+                  </span>
+                </div><!-- /input-group -->
+                <span class="error" hidden></span>
+            </form>
+        </div>
+    </nav>
+    </div>
+{% endblock %}
