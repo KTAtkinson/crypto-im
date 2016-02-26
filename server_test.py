@@ -3,6 +3,8 @@
 import json
 import unittest
 
+from flask import json
+
 import model
 import server
 
@@ -214,21 +216,19 @@ class ChatClientTest(unittest.TestCase):
             Then:
                 Status code 200 should be returned.
         """
-       # Commented out until request format better suites JSON.
-       # sender = self.users[1]
-       # reciever = self.users[0]
-       # uri = '/add_message/{}/{}'.format(self.conversation.conversation_id,
-       #                                   sender.user_id)
-       # msg_text = 'howdy!'
-       # messages = [{'user_id': reciever, 'encoded_message': msg_text},
-       #             {'user_id': sender, 'encoded_message': msg_text}]
-       # req = str({'encoded_messages': messages})
-       # rsp = self.client.post(uri, req)
-       # rsp_json = json.loads(rsp.data)
+        sender = self.users[1].user_id
+        reciever = self.users[0].user_id
+        uri = '/add_message/{}/{}'.format(self.conversation.conversation_id,
+                                          sender)
+        msg_text = 'howdy!'
+        msgs = {0: {'user_id': reciever, 'encoded_message': msg_text},
+                1: {'user_id': sender, 'encoded_message': msg_text}}
+        rsp = {'encoded_messages': json.dumps(msgs)}
+        rsp = self.client.post(uri, data=rsp)
+        rsp_json = json.loads(rsp.data)
 
-       # self.assertTrue(rsp_json['success'])
-       # self.assertIsNone(rsp_json['error'])
-        pass
+        self.assertTrue(rsp_json['success'])
+        self.assertIsNone(rsp_json['error'])
 
 
 if __name__ == '__main__':
