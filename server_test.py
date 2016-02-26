@@ -41,7 +41,14 @@ class ChatClientTest(unittest.TestCase):
             Then:
                 The chat page HTML is returned.
         """
-        pass
+        c_code = 'new-chat'
+        rsp = self.test_client.get('/{}'.format(c_code))
+
+        # HTML is returned.
+        self.assertIn('<html>', rsp)
+        # HTML for chat is retrieved.
+        self.assertIn(c_code, rsp)
+
 
     def test_join_new_chat(self):
         """Tests that a user can create and join a chat.
