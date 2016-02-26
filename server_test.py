@@ -1,5 +1,6 @@
 """Tests for flask server."""
 
+import json
 import unittest
 
 import model
@@ -42,13 +43,14 @@ class ChatClientTest(unittest.TestCase):
                 The chat page HTML is returned.
         """
         c_code = 'new-chat'
-        rsp = self.client.get('/{}'.format(c_code)).data
+        rsp = self.client.get('/{}'.format(c_code))
+        html = rsp.data
 
+        self.assertEqual(200, rsp.status_code)
         # HTML is returned.
-        self.assertIn('<html>', rsp)
+        self.assertIn('<html>', html)
         # HTML for chat is retrieved.
-        self.assertIn(c_code, rsp)
-
+        self.assertIn(c_code, html)
 
     def test_join_new_chat(self):
         """Tests that a user can create and join a chat.
@@ -57,13 +59,20 @@ class ChatClientTest(unittest.TestCase):
                 A running chat server.
 
             When:
-                '/join/<conversation_id>' route is requested.
+                '/join/<conversation_code>' route is requested.
 
             Then:
                 A chat is created with that conversation code, and a user is
                 created with the name provided and added to the chat.
         """
-        pass
+        rsp = self.client.post('/join/join-here', data={'name': 'bob'})
+        rsp_json = json.loads(rsp.data)
+
+        self.assertEqual(200, rsp.status_code)
+        self.assertTrue(rsp_json['success'])
+        self.assertEquals(rsp_json['error'], '')
+        self.assertIn('new_user_id', rsp_json)
+        self.assertIn('conversation_id', rsp_json)
 
     def test_join_existing_chat(self):
         """User can join existing chat with a single person.
