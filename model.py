@@ -68,14 +68,48 @@ def init_app():
     print "Connected to DB."
 
 
-def connect_to_db(app):
+def connect_to_db(app, db_name='chat-client'):
     """Connect the database to our Flask app."""
 
     # Configure to use our SQLite database
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///chat-client'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres:///{}'.format(db_name)
     app.config['SQLALCHEMY_ECHO'] = True
     db.app = app
     db.init_app(app)
+
+
+def seed(app):
+    # Create conversation.
+    conversation = Conversation(conversation_code='great-conv')
+    db.session.add(conversation)
+    db.session.commit()
+
+    # Create two users in the conversation.
+    user1 = User(name='alice', conversation_id=conversation.conversation_id,
+                 public_key='')
+    user2 = User(name='bob', conversation_id=conversation.conversation_id,
+                 public_key='')
+    db.session.add(user1)
+    db.session.add(user2)
+    db.session.commit()
+
+    # Add messages between these users.
+    msg1 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+                   message='Hello')
+    db.session.add(msg1)
+    db.session.commit()
+
+    msg2 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+                   message='Hello!?')
+    db.session.add(msg2)
+    db.session.commit()
+
+    msg3 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+                   message='You there??')
+    db.session.add(msg2)
+    db.session.commit()
+
+    return (conversation, (user1, user2), (msg1, msg2, msg3))
 
 
 if __name__ == "__main__":

@@ -3,7 +3,6 @@
 import unittest
 
 import model
-import seed
 import server
 
 
@@ -12,15 +11,23 @@ class ChatClientTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Initializes the test application."""
-        pass
+        cls.client = server.app.test_client()
+        server.app.config['TESTING'] = True
+
+        model.connect_to_db(server.app, db_name='chat-client-test')
+        # Clear any data that may be in the database.
+        model.db.drop_all()
 
     def setUp(self):
         """Setup data for tests."""
-        pass
+        model.db.create_all()
+        (self.conversation,
+         self.users,
+         self.msgs) = model.seed(server.app)
 
     def tearDown(self):
         """Drops all tables."""
-        pass
+        model.db.drop_all()
 
     def test_chat_page(self):
         """Test that the chat page route returns taxt/HTML.
@@ -150,3 +157,7 @@ class ChatClientTest(unittest.TestCase):
                 Status code 200 should be returned.
         """
         pass
+
+
+if __name__ == '__main__':
+    unittest.main()
