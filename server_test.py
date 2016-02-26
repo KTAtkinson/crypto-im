@@ -42,7 +42,7 @@ class ChatClientTest(unittest.TestCase):
                 The chat page HTML is returned.
         """
         c_code = 'new-chat'
-        rsp = self.test_client.get('/{}'.format(c_code))
+        rsp = self.client.get('/{}'.format(c_code)).data
 
         # HTML is returned.
         self.assertIn('<html>', rsp)
