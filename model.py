@@ -94,22 +94,30 @@ def seed(app):
     db.session.commit()
 
     # Add messages between these users.
-    msg1 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+    msg1a = Message(author_id=user1.user_id, recipient_id=user2.user_id,
                    message='Hello')
-    db.session.add(msg1)
-    db.session.commit()
+    msg1b = Message(author_id=user1.user_id, recipient_id=user1.user_id,
+                   message='Hello')
+    db.session.add(msg1a)
+    db.session.add(msg1b)
 
-    msg2 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+    msg2a = Message(author_id=user1.user_id, recipient_id=user2.user_id,
                    message='Hello!?')
-    db.session.add(msg2)
-    db.session.commit()
+    msg2b = Message(author_id=user1.user_id, recipient_id=user1.user_id,
+                   message='Hello!?')
+    db.session.add(msg2a)
+    db.session.add(msg2b)
 
-    msg3 = Message(author_id=user1.user_id, recipient_id=user2.user_id,
+    msg3a = Message(author_id=user1.user_id, recipient_id=user2.user_id,
                    message='You there??')
-    db.session.add(msg2)
+    msg3b = Message(author_id=user1.user_id, recipient_id=user1.user_id,
+                   message='You there??')
+    db.session.add(msg3a)
+    db.session.add(msg3b)
     db.session.commit()
 
-    return (conversation, (user1, user2), (msg1, msg2, msg3))
+    return (conversation, (user1, user2),
+            (msg1a, msg1b, msg2a, msg2b, msg3a, msg3b))
 
 
 if __name__ == "__main__":

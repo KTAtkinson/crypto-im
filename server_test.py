@@ -28,6 +28,7 @@ class ChatClientTest(unittest.TestCase):
 
     def tearDown(self):
         """Drops all tables."""
+        model.db.session.close()
         model.db.drop_all()
 
     def test_chat_page(self):
@@ -83,10 +84,23 @@ class ChatClientTest(unittest.TestCase):
             When:
                 Another user joins.
 
-           Then:
-                The user is successfully added to the chat.
-        """
-        pass
+          Then:
+              The user is successfully added to the chat.
+       """
+        conv_code = 'new-chat'
+        conv = model.Conversation(conversation_code=conv_code)
+        model.db.session.add(conv)
+        model.db.session.commit()
+
+        user1 = model.User(name='bob', conversation_id=conv.conversation_id,
+                           public_key='')
+        model.db.session.add(user1)
+        model.db.session.commit()
+
+        rsp = self.client.post('/join/{}'.format(conv_code),
+                               data={'name': 'alice'})
+
+        self.assertEqual(200, rsp.status_code)
 
     def test_full_conversation(self):
         """User receives an error when joining a conversation with two users.
@@ -100,7 +114,12 @@ class ChatClientTest(unittest.TestCase):
         Then:
             The server returns an error.
         """
-        pass
+        conversation_code = self.conversation.conversation_code
+
+        rsp = self.client.post('/join/{}'.format(conversation_code),
+                               data={'name': 'eve', 'public_key': ''})
+
+        self.assertEqual(400, rsp.status_code)
 
     def test_status(self):
         """Test that /status route returns JSON response.
@@ -115,21 +134,20 @@ class ChatClientTest(unittest.TestCase):
                 The response contains new messages and the status of other users
                 in the conversation.
         """
-        pass
+        conversation_id = self.conversation.conversation_id
+        user_id = self.users[0].user_id
+        uri = '/status/{}/{}'.format(conversation_id, user_id)
+        rsp = self.client.post(uri, data={'public_key': '',
+                                          'last_message_seen_id': None})
+        rsp_json = json.loads(rsp.data)
 
-    def test_status_all_messages(self):
-        """All messages are returned when no last_message_seen_id is provided.
-
-            Given:
-                A converstaion with two users and some messages.
-
-            When:
-                A user requests status with no last_messsage_seen id.
-
-            Then:
-                They should recieve all outstanding messages in return.
-        """
-        pass
+        self.assertEqual(200, rsp.status_code)
+        self.assertTrue(rsp_json['success'])
+        self.assertIn('users', rsp_json)
+        self.assertIn('new_messages', rsp_json)
+        # All messages are in the response because no last_message_seen_id
+        # is specified.
+        self.assertEqual(3, len(rsp_json['new_messages']))
 
     def test_status_new_messages(self):
         """User receives new messages when they update their status.
@@ -144,7 +162,22 @@ class ChatClientTest(unittest.TestCase):
                  They recieve all messages back that where sent after the
                 message_id provided by the client.
         """
-        pass
+        conversation_id = self.conversation.conversation_id
+        user_id = self.users[0].user_id
+        message_id = self.msgs[1].message_id
+        uri = '/status/{}/{}'.format(conversation_id, user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': message_id})
+        rsp_json = json.loads(rsp.data)
+
+        self.assertEqual(200, rsp.status_code)
+        self.assertTrue(rsp_json['success'])
+        self.assertIn('users', rsp_json)
+        self.assertIn('new_messages', rsp_json)
+        # All messages are in the response because no last_message_seen_id
+        # i specified.
+        self.assertEqual(2, len(rsp_json['new_messages']))
 
     def test_no_new_messages(self):
         """User receives no new messages when there are no new messages.
@@ -158,7 +191,16 @@ class ChatClientTest(unittest.TestCase):
             Then:
             The users should not recieve any new messages
         """
-        pass
+        conversation_id = self.conversation.conversation_id
+        user_id = self.users[0].user_id
+        message_id = self.msgs[-1].message_id
+        uri = '/status/{}/{}'.format(conversation_id, user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': message_id})
+        rsp_json = json.loads(rsp.data)
+
+        self.assertEqual(0, len(rsp_json['new_messages']))
 
     def test_send_message(self):
         """User can send message through '/add_message' route.
@@ -172,6 +214,20 @@ class ChatClientTest(unittest.TestCase):
             Then:
                 Status code 200 should be returned.
         """
+       # Commented out until request format better suites JSON.
+       # sender = self.users[1]
+       # reciever = self.users[0]
+       # uri = '/add_message/{}/{}'.format(self.conversation.conversation_id,
+       #                                   sender.user_id)
+       # msg_text = 'howdy!'
+       # messages = [{'user_id': reciever, 'encoded_message': msg_text},
+       #             {'user_id': sender, 'encoded_message': msg_text}]
+       # req = str({'encoded_messages': messages})
+       # rsp = self.client.post(uri, req)
+       # rsp_json = json.loads(rsp.data)
+
+       # self.assertTrue(rsp_json['success'])
+       # self.assertIsNone(rsp_json['error'])
         pass
 
 
