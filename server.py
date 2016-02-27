@@ -159,8 +159,6 @@ def add_message(conversation_id, user_id):
     Returns:
         response: <str> json verifing that the message was posted.
     """
-
-    request = json.loads(flask.request.form.keys()[0])
     author = model.User.query.get(user_id)
     print author
     if author.conversation_id != int(conversation_id):
@@ -171,7 +169,9 @@ def add_message(conversation_id, user_id):
                 }
         return flask.json.jsonify(response), 403 
 
-    for message in request.get('encoded_messages'):
+    messages = flask.json.loads(flask.request.form.get('encoded_messages'))
+    for msg_index in messages:
+        message = messages[msg_index]
         new_message = model.Message(author_id=user_id,
                                     recipient_id=message['user_id'],
                                     message=message['encoded_message'])
