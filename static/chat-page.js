@@ -10,11 +10,16 @@ function sendMessage(evt) {
         var recipient = recipientData[i];
         encodePromises.push(encryptMessage(recipient.user_id, recipient.public_key, messageText));
     }
+    debugger;
 
     Promise.all(encodePromises)
         .then(
             function(msgs) {
-                var request = JSON.stringify({'encoded_messages': msgs});
+                var msgsObj = {}
+                for (var i=0; i<msgs.length; i++) {
+                    msgsObj[i] = msgs[i];
+                }
+                var request = {'encoded_messages': JSON.stringify(msgsObj)};
                 // var request = {'key': [{'user_id': user_id}, {'key1', messageText}]};
         
                 $.ajax('/add_message/' + c_id + '/' + user_id,
