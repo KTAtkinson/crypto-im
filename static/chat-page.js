@@ -197,12 +197,10 @@ function joinSuccess(data) {
                               function() {})},
               function() {});
     window.cookieKey = "chat-data-" + data.conversation_id.toString()
-    window.user_id = data.new_user_id;
-    window.c_id = data.conversation_id;
     $("#add-user-form").hide();
     $("#conversation-pane").show();
     $('#send-message-form').submit(sendMessage);
-    pollForMessages(c_id, user_id, TIMEOUT);
+    pollForMessages(data.conversation_id, data.user_id, TIMEOUT);
 }
 
 
