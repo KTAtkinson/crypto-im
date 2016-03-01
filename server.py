@@ -67,7 +67,7 @@ def join_chat(conversation_code):
 
     str_user_id = str(new_user.user_id)
     str_conv_id = str(conversation.conversation_id)
-    flask.session[str_conv_id] = str_user_id
+    flask.session[str_conv_id] = ':'.join([str_user_id, str_conv_id])
     rsp = {
             'success': True,
             'error': '',
