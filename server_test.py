@@ -139,6 +139,8 @@ class ChatClientTest(unittest.TestCase):
         conversation_id = self.conversation.conversation_id
         user_id = self.users[0].user_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
+        self.set_session_cookie(user_id, conversation_id)
+        self.set_user_cookie(user_id, conversation_id)
         rsp = self.client.post(uri, data={'public_key': '',
                                           'last_message_seen_id': None})
         rsp_json = json.loads(rsp.data)
@@ -229,6 +231,16 @@ class ChatClientTest(unittest.TestCase):
 
         self.assertTrue(rsp_json['success'])
         self.assertIsNone(rsp_json['error'])
+
+
+    def set_user_cookie(self, user_id, conversation_id):
+        self.client.set_cookie('localhost',
+                               '-'.join(['chat', 'data', str(converstaion_id)]),
+                               ':'.join([user_id, conversation_id]))
+
+    def set_session_cookie(self, user_id, conversation_id):
+        flask.session[str(conversation_id)] = (
+                ":".join([str(user_id), str(conversation_id)]))
 
 
 if __name__ == '__main__':
