@@ -57,7 +57,7 @@ function encryptMessage(recieverId, rPublicKey, msgText) {
                                 function(strBuffer) { 
                                     var encryptedBuffer = new Uint8Array(strBuffer);
                                     var encryptedStr = arrayBufferViewToStr(encryptedBuffer);
-                                    var encryptedStr = encryptedStr.replace(/"|'/g, escapeChar);
+                                    var encodedStr = btoa(encryptedStr);
                                     resolve({ 'user_id': recieverId,
                                         'encoded_message': encryptedStr})},
                                 function(err) {
@@ -75,9 +75,8 @@ function addMessages(stream, msgs) {
     }
     
     var workingMsg = msgs[0];
-    var escapedText = workingMsg.message.replace(/&#\d{1,3};/g, unescapeChar);
-    console.log(escapedText);
-    var msgBuffer = strToArrayBufferView(escapedText);
+    var decodedMsg = atob(workingMsg.message)
+    var msgBuffer = strToArrayBufferView(decodedMsg);
     crypto.subtle.decrypt({name: "RSA-OAEP", iv: vector}, privateKey, msgBuffer)
         .then(function(textBuffer) {
                     var msgText = arrayBufferViewToStr(new Uint8Array(textBuffer));
