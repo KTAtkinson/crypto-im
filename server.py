@@ -171,7 +171,7 @@ def add_message(conversation_id, user_id):
         response: <str> json verifing that the message was posted.
     """
     verified = (
-            VerifyCookies(flask.session[conversation_id],
+            VerifyCookies(flask.session,
             flask.request.cookies['chat-data-'+conversation_id]))
     if not verified:
         return flask.json.jsonify({'success': False,
