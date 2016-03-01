@@ -92,7 +92,6 @@ def update_user_status(conversation_id, user_id):
         response: <str> json, containing the statues of other users in the
             conversation, and any new messages for the user.
     """
-    import pdb; pdb.set_trace()
     verified = (
             VerifyCookies(flask.session,
                           flask.request.cookies['chat-data-'+conversation_id]))
@@ -202,7 +201,7 @@ def VerifyCookies(session_cookie, user_cookie):
     user_id, conv_id = user_cookie.split(":")
     session_cookie_data = session_cookie[conv_id]
 
-    if session_cookie_data != user_id:
+    if session_cookie_data != user_cookie:
         return False
 
     return True
