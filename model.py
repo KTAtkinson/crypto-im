@@ -54,7 +54,7 @@ class Message(db.Model):
         return cls.query.get(message_id)
 
 
-class Invitations(db.Model):
+class Invitation(db.Model):
     """Model for chat invitations."""
     __tablename__ = "invitations"
     invite_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -63,7 +63,8 @@ class Invitations(db.Model):
     approver_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
                                  nullable=False)
     is_approved = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime(), default=datetime.datetime.now)
+    sent_timestamp = db.Column(db.DateTime)
+
 
     joinee = db.relationship('User',
                              foreign_keys='Invitations.joining_user_id',
