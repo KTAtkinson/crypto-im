@@ -54,6 +54,22 @@ class Message(db.Model):
         return cls.query.get(message_id)
 
 
+class Invitations(db.Model):
+    """Model for chat invitations."""
+    __tablename__ = "invitations"
+    invite_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    joining_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
+                                nullable=False)
+    approver_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
+                                 nullable=False)
+    is_approved = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime(), default=datetime.datetime.now)
+
+    joinee = db.relationship('User',
+                             foreign_keys='Invitations.joining_user_id',
+                             backref=db.backref('approvals'))
+
+
 # The following code was borrowed from a Hackbright skiills assessment on
 # it provides an interactive python prompt for quiering and manipulating
 # the databsse.
