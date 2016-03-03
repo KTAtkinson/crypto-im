@@ -22,6 +22,33 @@ class User(db.Model):
             db.ForeignKey('conversations.conversation_id'),
             nullable=False)
 
+    def add_invites(self):
+        users = User.query.filter(
+                Conversation.conversation_id==self.conversation_id,
+                User.user_id!=self.user_id).all()
+        approver_ids = []
+
+        # If there are no other users create approved invite in which the joining
+        # user is both the joiner and the approver.
+        if not users:
+            invitation = Invitation(joining_user_id=self.user_id,
+                                    approver_user_id=self.user_id,
+                                    is_approved=True)
+            db.session.add(invitation)
+
+        for user in users:
+            if not Invitation.query.filter_by(joining_user_id=user.user_id,
+                                           is_approved=False).all():
+                approver_ids.append(user.user_id)
+
+        for user_id in approver_ids:
+             invitation = Invitation(joining_user_id=self.user_id,
+                                     approver_user_id=user_id)
+             db.session.add(invitation)
+
+        db.session.commit()
+
+
 
 class Conversation(db.Model):
     """Model for a chat conversation."""
@@ -54,7 +81,7 @@ class Message(db.Model):
         return cls.query.get(message_id)
 
 
-class Invitations(db.Model):
+class Invitation(db.Model):
     """Model for chat invitations."""
     __tablename__ = "invitations"
     invite_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
@@ -63,11 +90,13 @@ class Invitations(db.Model):
     approver_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
                                  nullable=False)
     is_approved = db.Column(db.Boolean, default=False)
-    timestamp = db.Column(db.DateTime(), default=datetime.datetime.now)
+    sent_timestamp = db.Column(db.DateTime)
+
 
     joinee = db.relationship('User',
-                             foreign_keys='Invitations.joining_user_id',
+                             foreign_keys='Invitation.joining_user_id',
                              backref=db.backref('approvals'))
+
 
 
 # The following code was borrowed from a Hackbright skiills assessment on
