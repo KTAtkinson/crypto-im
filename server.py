@@ -165,6 +165,19 @@ def update_user_status(conversation_id, user_id):
     return flask.json.jsonify(response)
 
 
+@app.route('/invite_ack/<int:responder_user_id>/<int:joining_user_id>',
+           methods=['POST'])
+def invitation_ack(responder_user_id, joining_user_id):
+    is_approved = flask.request.form.get('is_approved')
+    query = model.Invitation.query.filter_by(joining_user_id=joining_user_id,
+                                             approver_user_id=responder_user_id)
+    invite = query.one()
+    invite.is_approved = is_approved
+    model.db.session.add(invite)
+    model.db.session.commit()
+
+    return flask.json.jsonify({'success': True})
+
 @app.route('/add_message/<string:conversation_id>/<string:user_id>',
            methods=['POST'])
 def add_message(conversation_id, user_id):

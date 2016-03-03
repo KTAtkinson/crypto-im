@@ -202,34 +202,20 @@ class ChatClientTest(unittest.TestCase):
 
     def test_new_invitation(self):
         """User recieves an invitation when there is one outstanding."""
-        invite = model.Invitation(joining_user_id=self.users[0].user_id,
-                                  approver_user_id=self.users[0].user_id,
-                                  is_approved=True)
-        model.db.session.add(invite)
-        user = model.User(conversation_id=self.conversation.conversation_id,
-                          name='bob', public_key='')
-        model.db.session.add(user)
-        model.db.session.commit()
-        user_id = user.user_id
-
-        invite = model.Invitation(joining_user_id=user.user_id,
-                                  approver_user_id=self.users[0].user_id)
-        model.db.session.add(invite)
-        model.db.session.commit()
-        uri = '/status/{}/{}'.format(self.conversation.conversation_id,
-                                     self.users[0].user_id)
-        self.set_user_cookie(self.users[0].user_id,
-                             self.conversation.conversation_id)
-        self.set_session_cookie(self.users[0].user_id,
-                                self.conversation.conversation_id)
+        (approval_user_id,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites()
+        uri = '/status/{}/{}'.format(conversation_id, approval_user_id)
+        self.set_user_cookie(approval_user_id, conversation_id)
+        self.set_session_cookie(approval_user_id, conversation_id)
         resp = self.client.post(
                 uri, data={'public_key':'', 'last_message_seen_id': None})
         resp_json = json.loads(resp.data)
 
         invitations = resp_json['invitations']
         self.assertEqual(len(invitations), 1)
-        self.assertEqual(invitations[0]['user_id'],
-                         user_id)
+        self.assertEqual(invitations[0]['user_id'], joining_user_id)
 
     def test_no_new_messages(self):
         """User receives no new messages when there are no new messages.
@@ -255,6 +241,22 @@ class ChatClientTest(unittest.TestCase):
         rsp_json = json.loads(rsp.data)
 
         self.assertEqual(0, len(rsp_json['new_messages']))
+
+    def test_ack_invitation(self):
+        """Test acknowledging an invitation."""
+        (approver_user_id,
+         joining_user_id,
+         _,
+         invite_id) = self.setup_invites()
+        uri = '/invite_ack/{}/{}'.format(approver_user_id, joining_user_id)
+        rsp = self.client.post(uri, data={'approves': True})
+        rsp_json = json.loads(rsp.data)
+
+        invite = model.Invitation.query.get(invite_id)
+        self.assertEqual(rsp_json['success'], True)
+        self.assertEqual(rsp.status_code, 200)
+        self.assertEqual(invite.invite_id, invite_id)
+
 
     def test_send_message(self):
         """User can send message through '/add_message' route.
@@ -297,6 +299,27 @@ class ChatClientTest(unittest.TestCase):
             with c.session_transaction() as sess:
                 sess[str(conversation_id)] = (
                         ":".join([str(user_id), str(conversation_id)]))
+
+    def setup_invites(self, is_approved=False):
+        approver = self.users[0]
+        conversation_id = self.conversation.conversation_id
+        invite = model.Invitation(joining_user_id=approver.user_id,
+                                  approver_user_id=approver.user_id,
+                                  is_approved=True)
+        model.db.session.add(invite)
+        joiner = model.User(conversation_id=conversation_id,
+                           name='bob', public_key='')
+        model.db.session.add(joiner)
+        model.db.session.commit()
+        joiner_user_id = joiner.user_id 
+
+        invite = model.Invitation(joining_user_id=joiner_user_id,
+                                  approver_user_id=approver.user_id,
+                                  is_approved=is_approved)
+        model.db.session.add(invite)
+        model.db.session.commit()
+        return (approver.user_id, joiner_user_id, conversation_id,
+                invite.invite_id)
 
 
 if __name__ == '__main__':
