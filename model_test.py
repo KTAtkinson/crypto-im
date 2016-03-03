@@ -80,6 +80,24 @@ class UserModelTest(unittest.TestCase):
         self.assertEqual(len(invites), 1)
         self.assertEqual(user.user_id, invites[0].approver_user_id)
 
+    def testIsApproved(self):
+        """Tests is approved returns True when the user is approved."""
+        self.assertTrue(self.user.is_approved())
+
+    def testIsNotApproved(self):
+        """Tests is approved returns False when a user is not approved."""
+        user = model.User(conversation_id=self.conversation.conversation_id,
+                          name='bob', public_key='')
+        model.db.session.add(user)
+        model.db.session.commit()
+
+        invite = model.Invitation(joining_user_id=user.user_id,
+                                  approver_user_id=self.user.user_id)
+
+        model.db.session.add(invite)
+        model.db.session.commit()
+
+        self.assertFalse(user.is_approved())
 
 
 if __name__ == '__main__':

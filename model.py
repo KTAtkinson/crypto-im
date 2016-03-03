@@ -48,6 +48,16 @@ class User(db.Model):
 
         db.session.commit()
 
+    def is_approved(self):
+        """Returns True if the user is approved to join their conversation."""
+        invites = Invitation.query.filter(
+                Invitation.joining_user_id==self.user_id)
+        for i in invites:
+            if i.is_approved is False:
+                return False
+
+        return True
+
 
 
 class Conversation(db.Model):
