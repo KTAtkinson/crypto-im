@@ -65,13 +65,18 @@ def join_chat(conversation_code):
     model.db.session.add(new_user)
     model.db.session.commit()
 
-    response = {
+    str_user_id = str(new_user.user_id)
+    str_conv_id = str(conversation.conversation_id)
+    flask.session[str_conv_id] = ':'.join([str_user_id, str_conv_id])
+    rsp = {
             'success': True,
             'error': '',
             'new_user_id': new_user.user_id,
             'conversation_id': new_user.conversation_id,
             }
-    return flask.json.jsonify(response)
+    response = app.make_response(flask.json.jsonify(rsp))
+    response.set_cookie("chat-data-"+str_conv_id, value=str_user_id+":"+str_conv_id)
+    return response
 
 
 @app.route('/status/<string:conversation_id>/<int:user_id>', methods=['POST'])
@@ -87,6 +92,12 @@ def update_user_status(conversation_id, user_id):
         response: <str> json, containing the statues of other users in the
             conversation, and any new messages for the user.
     """
+    verified = (
+            VerifyCookies(flask.session,
+                          flask.request.cookies['chat-data-'+conversation_id]))
+    if not verified:
+        return flask.json.jsonify({'success': False,
+                                   'error': "Was not able to verify user."})
     pkey = flask.request.form.get('public_key')
     print "AVAILABLE FORM FIELDS:", flask.request.form.keys()
     user = model.User.query.get(user_id)
@@ -159,8 +170,13 @@ def add_message(conversation_id, user_id):
     Returns:
         response: <str> json verifing that the message was posted.
     """
+    verified = (
+            VerifyCookies(flask.session,
+            flask.request.cookies['chat-data-'+conversation_id]))
+    if not verified:
+        return flask.json.jsonify({'success': False,
+                                   'error': "Failed to verify user."})
     author = model.User.query.get(user_id)
-    print author
     if author.conversation_id != int(conversation_id):
         response = {
                 'success': False,
@@ -179,6 +195,16 @@ def add_message(conversation_id, user_id):
     model.db.session.commit()
 
     return flask.json.jsonify({'success': True, 'error': None})
+
+
+def VerifyCookies(session_cookie, user_cookie):
+    user_id, conv_id = user_cookie.split(":")
+    session_cookie_data = session_cookie[conv_id]
+
+    if session_cookie_data != user_cookie:
+        return False
+
+    return True
 
 
 if __name__ == '__main__':

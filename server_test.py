@@ -32,6 +32,9 @@ class ChatClientTest(unittest.TestCase):
         """Drops all tables."""
         model.db.session.close()
         model.db.drop_all()
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess.clear()
 
     def test_chat_page(self):
         """Test that the chat page route returns taxt/HTML.
@@ -138,7 +141,11 @@ class ChatClientTest(unittest.TestCase):
         """
         conversation_id = self.conversation.conversation_id
         user_id = self.users[0].user_id
+
         uri = '/status/{}/{}'.format(conversation_id, user_id)
+        self.set_session_cookie(user_id, conversation_id)
+        self.set_user_cookie(user_id, conversation_id)
+
         rsp = self.client.post(uri, data={'public_key': '',
                                           'last_message_seen_id': None})
         rsp_json = json.loads(rsp.data)
@@ -168,6 +175,8 @@ class ChatClientTest(unittest.TestCase):
         user_id = self.users[0].user_id
         message_id = self.msgs[1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
+        self.set_session_cookie(user_id, conversation_id)
+        self.set_user_cookie(user_id, conversation_id)
         rsp = self.client.post(uri,
                                data={'public_key': '',
                                      'last_message_seen_id': message_id})
@@ -197,6 +206,8 @@ class ChatClientTest(unittest.TestCase):
         user_id = self.users[0].user_id
         message_id = self.msgs[-1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
+        self.set_session_cookie(user_id, conversation_id)
+        self.set_user_cookie(user_id, conversation_id)
         rsp = self.client.post(uri,
                                data={'public_key': '',
                                      'last_message_seen_id': message_id})
@@ -218,17 +229,33 @@ class ChatClientTest(unittest.TestCase):
         """
         sender = self.users[1].user_id
         reciever = self.users[0].user_id
-        uri = '/add_message/{}/{}'.format(self.conversation.conversation_id,
-                                          sender)
+        conversation_id = self.conversation.conversation_id
+
+        uri = '/add_message/{}/{}'.format(conversation_id, sender)
+        self.set_session_cookie(sender, conversation_id)
+        self.set_user_cookie(sender, conversation_id)
         msg_text = 'howdy!'
         msgs = {0: {'user_id': reciever, 'encoded_message': msg_text},
                 1: {'user_id': sender, 'encoded_message': msg_text}}
+
         rsp = {'encoded_messages': json.dumps(msgs)}
         rsp = self.client.post(uri, data=rsp)
         rsp_json = json.loads(rsp.data)
 
         self.assertTrue(rsp_json['success'])
         self.assertIsNone(rsp_json['error'])
+
+
+    def set_user_cookie(self, user_id, conversation_id):
+        self.client.set_cookie('localhost',
+                               '-'.join(['chat', 'data', str(conversation_id)]),
+                               ':'.join([str(user_id), str(conversation_id)]))
+
+    def set_session_cookie(self, user_id, conversation_id):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[str(conversation_id)] = (
+                        ":".join([str(user_id), str(conversation_id)]))
 
 
 if __name__ == '__main__':

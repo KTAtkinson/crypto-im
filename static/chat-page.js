@@ -1,16 +1,36 @@
+function getCookieInfo() {
+    var cookies = document.cookie.split(";");
+
+    var uId, cId
+    for (var i=0; i<cookies.length; i++) {
+        var cookie = cookies[i].split("=");
+        if (cookie[0].trim() == cookieKey) {
+            var values = cookie[1].split(":");
+            var uId = values[0];
+            var cId = values[1];
+            break;
+        }
+    }
+    return [uId, cId]
+}
+
+
 function sendMessage(evt) {
+    var cookieData = getCookieInfo();
+    var uId = cookieData[0];
+    var cId = cookieData[1];
     evt.preventDefault();
+    
     var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
     
     var encodePromises = []
-    var recipientData = conversation_users.concat([{user_id: user_id, public_key: JSON.stringify(publicJWK)}]);
+    var recipientData = conversation_users.concat([{user_id: uId, public_key: JSON.stringify(publicJWK)}]);
 
     for (var i=0; i<recipientData.length; i++) {
         var recipient = recipientData[i];
         encodePromises.push(encryptMessage(recipient.user_id, recipient.public_key, messageText));
     }
-    debugger;
 
     Promise.all(encodePromises)
         .then(
@@ -22,7 +42,7 @@ function sendMessage(evt) {
                 var request = {'encoded_messages': JSON.stringify(msgsObj)};
                 // var request = {'key': [{'user_id': user_id}, {'key1', messageText}]};
         
-                $.ajax('/add_message/' + c_id + '/' + user_id,
+                $.ajax('/add_message/' + cId + '/' + uId,
                        {'method':'POST', 'data':request})
                     .always(function() {
                             var error_container = $('#conversation-pane .error');
@@ -59,7 +79,7 @@ function encryptMessage(recieverId, rPublicKey, msgText) {
                                     var encodedStr = new Uint8Array(strBuffer);
                                     encodedStr = encodedStr.toString();
                                     resolve({ 'user_id': recieverId,
-                                        'encoded_message': encodedStr})},
+                                              'encoded_message': encodedStr})},
                                 function(err) {
                                     reject("Failed to encrypt message: " + err);
                                 });
@@ -119,13 +139,17 @@ function addMessages(stream, msgs) {
 
 
 function pollForMessages(conversation_id, user_id, interval) {
+    var cookieData = getCookieInfo();
+    var uId = cookieData[0];
+    var cId = cookieData[1];
+    console.log("USER ID: " + uId + "CONVERSATION ID: " + cId)
     var last_message_id = $('#conversation .chat-message:last').data('mid') || null;
     request = {
             'public_key': JSON.stringify(publicJWK),
             'last_message_seen_id': last_message_id
             }
 
-    $.ajax('/status/' + conversation_id + '/' + user_id,
+    $.ajax('/status/' + cId + '/' + uId,
            {'method': 'POST', 'data':request})
            .always(function() {
                 var error_container = $('#conversation-pane .error');
@@ -142,7 +166,7 @@ function pollForMessages(conversation_id, user_id, interval) {
                 var chatStream = document.getElementById('conversation');
                 addMessages(chatStream, newMessages);
                 window.conversation_users = resp.users;
-                window.setTimeout(pollForMessages, interval, conversation_id, user_id, TIMEOUT);
+                window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
            });
 }
 
@@ -172,12 +196,11 @@ function joinSuccess(data) {
                                     window.publicJWK = jwk;},
                               function() {})},
               function() {});
-    window.user_id = data.new_user_id;
-    window.c_id = data.conversation_id;
+    window.cookieKey = "chat-data-" + data.conversation_id.toString()
     $("#add-user-form").hide();
     $("#conversation-pane").show();
     $('#send-message-form').submit(sendMessage);
-    pollForMessages(c_id, user_id, TIMEOUT);
+    pollForMessages(data.conversation_id, data.user_id, TIMEOUT);
 }
 
 
@@ -210,3 +233,4 @@ var publicKey = null;
 var privateKey = null;
 var publicJWK = null;
 var vector = crypto.getRandomValues(new Uint8Array(16));
+var cookieKey = null;
