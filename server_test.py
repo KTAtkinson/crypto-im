@@ -200,6 +200,35 @@ class ChatClientTest(unittest.TestCase):
         # i specified.
         self.assertEqual(2, len(rsp_json['new_messages']))
 
+    def test_new_invitation(self):
+        """User recieves an invitation when there is one outstanding."""
+        invite = model.Invitation(joining_user_id=self.users[0].user_id,
+                                  approver_user_id=self.users[0].user_id,
+                                  is_approved=True)
+        model.db.session.add(invite)
+        user = model.User(conversation_id=self.conversation.conversation_id,
+                          name='bob', public_key='')
+        model.db.session.add(user)
+        model.db.session.commit()
+
+        invite = model.Invitation(joining_user_id=user.user_id,
+                                  approver_user_id=self.users[0].user_id)
+        model.db.session.commit()
+        uri = '/status/{}/{}'.format(self.conversation.conversation_id,
+                                     self.users[0].user_id)
+        self.set_user_cookie(self.users[0].user_id,
+                             self.conversation.conversation_id)
+        self.set_session_cookie(self.users[0].user_id,
+                                self.conversation.conversation_id)
+        resp = self.client.post(
+                uri, data={'public_key':'', 'last_message_seen_id': None})
+        resp_json = json.loads(resp.data)
+
+        invitations = resp_json['invitations']
+        self.assertEqual(len(invitations), 1)
+        self.assertEqual(invitations[0]['user_id'],
+                         user.user_id)
+
     def test_no_new_messages(self):
         """User receives no new messages when there are no new messages.
 
