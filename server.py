@@ -64,6 +64,7 @@ def join_chat(conversation_code):
                           conversation_id=conversation.conversation_id)
     model.db.session.add(new_user)
     model.db.session.commit()
+    new_user.add_invites()
 
     response = {
             'success': True,

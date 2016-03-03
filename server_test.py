@@ -123,6 +123,15 @@ class ChatClientTest(unittest.TestCase):
 
         self.assertEqual(400, rsp.status_code)
 
+    def test_invites_added(self):
+        """Invites are created for each user in the conversation."""
+        rsp = self.client.post('/join/join-here', data={'name': 'bob'})
+        rsp_json = json.loads(rsp.data)
+
+        invites = model.Invitation.query.filter_by(
+                joining_user_id=rsp_json['new_user_id']).count()
+        self.assertNotEqual(int(invites), 0)
+
     def test_status(self):
         """Test that /status route returns JSON response.
 

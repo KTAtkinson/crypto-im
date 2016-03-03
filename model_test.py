@@ -62,6 +62,25 @@ class UserModelTest(unittest.TestCase):
         self.assertEqual(len(invites), 1)
         self.assertFalse(invites[0].is_approved)
 
+    def testAddInviteToNewChat(self):
+        """Tests adding an invite for new chat."""
+        conv = model.Conversation(conversation_code='testing')
+        model.db.session.add(conv)
+        model.db.session.commit()
+
+        user = model.User(name='alice', public_key='',
+                          conversation_id=conv.conversation_id)
+        model.db.session.add(user)
+        model.db.session.commit()
+
+        user.add_invites()
+        invites = model.Invitation.query.filter_by(
+                joining_user_id=user.user_id).all()
+
+        self.assertEqual(len(invites), 1)
+        self.assertEqual(user.user_id, invites[0].approver_user_id)
+
+
 
 if __name__ == '__main__':
     unittest.main()

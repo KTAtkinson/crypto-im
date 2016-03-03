@@ -24,7 +24,7 @@ class User(db.Model):
 
     def add_invites(self):
         users = User.query.filter(
-                Conversation.conversation_id==self.conversation_id,
+                User.conversation_id==self.conversation_id,
                 User.user_id!=self.user_id).all()
         approver_ids = []
 
@@ -132,9 +132,9 @@ def seed(app):
     # Create two users in the conversation.
     user1 = User(name='alice', conversation_id=conversation.conversation_id,
                  public_key='')
+    db.session.add(user1)
     user2 = User(name='bob', conversation_id=conversation.conversation_id,
                  public_key='')
-    db.session.add(user1)
     db.session.add(user2)
     db.session.commit()
 
