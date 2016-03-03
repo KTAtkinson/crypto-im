@@ -76,15 +76,10 @@ function encryptMessage(recieverId, rPublicKey, msgText) {
                                               msgBuffer)
                             .then(
                                 function(strBuffer) { 
-                                    var encryptedBuffer = new Uint8Array(strBuffer);
-                                    var encryptedStr = arrayBufferViewToStr(encryptedBuffer);
-                                    var encryptedStr = encryptedStr.replace(/"|'/g, escapeChar);
+                                    var encodedStr = new Uint8Array(strBuffer);
+                                    encodedStr = encodedStr.toString();
                                     resolve({ 'user_id': recieverId,
-<<<<<<< HEAD
-                                        'encoded_message': encryptedStr})},
-=======
                                               'encoded_message': encodedStr})},
->>>>>>> 926efcd0cfebc298c95c61c359533b5c3efb10d6
                                 function(err) {
                                     reject("Failed to encrypt message: " + err);
                                 });
@@ -100,9 +95,7 @@ function addMessages(stream, msgs) {
     }
     
     var workingMsg = msgs[0];
-    var escapedText = workingMsg.message.replace(/&#\d{1,3};/g, unescapeChar);
-    console.log(escapedText);
-    var msgBuffer = strToArrayBufferView(escapedText);
+    var msgBuffer = new Uint8Array(workingMsg.message.split(","));
     crypto.subtle.decrypt({name: "RSA-OAEP", iv: vector}, privateKey, msgBuffer)
         .then(function(textBuffer) {
                     var msgText = arrayBufferViewToStr(new Uint8Array(textBuffer));
@@ -169,9 +162,7 @@ function pollForMessages(conversation_id, user_id, interval) {
                 window.setTimeout(pollForMessages, interval*1.5, conversation_id, user_id, TIMEOUT*1.5);
                 })
            .done(function(resp) {
-                console.log(resp)
                 var newMessages = resp.new_messages;
-                console.log(newMessages)
                 var chatStream = document.getElementById('conversation');
                 addMessages(chatStream, newMessages);
                 window.conversation_users = resp.users;
