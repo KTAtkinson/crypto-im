@@ -125,23 +125,30 @@ def update_user_status(conversation_id, user_id):
     conversation_users = model.User.query.filter(
             model.User.conversation_id == conversation_id,
             model.User.user_id != user_id).all()
+
     print conversation_users
 
     # TODO: Move to model.Users
     conversation_users_dict_list = []
+    invitations = []
     for user in conversation_users:
-        time_inactive = datetime.datetime.now(tz=pytz.utc) - user.last_seen
-        user_dict = {
-                'user_id': user.user_id,
-                'public_key': user.public_key,
-                'inactive_secs': time_inactive.total_seconds()
-                }
-        conversation_users_dict_list.append(user_dict)
+        if user.is_approved():
+            time_inactive = datetime.datetime.now(tz=pytz.utc) - user.last_seen
+            user_dict = {
+                    'user_id': user.user_id,
+                    'public_key': user.public_key,
+                    'inactive_secs': time_inactive.total_seconds()
+                    }
+            conversation_users_dict_list.append(user_dict)
+        else:
+            invitations.append({'user_id': user.user_id,
+                                'user_name': user.name})
 
     response = {
             'success': True,
             'users': conversation_users_dict_list,
-            'new_messages': new_message_dict_list
+            'invitations': invitations,
+            'new_messages': new_message_dict_list,
             }
     model.db.session.commit()
     return flask.json.jsonify(response)

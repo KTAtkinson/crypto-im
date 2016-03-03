@@ -156,6 +156,7 @@ class ChatClientTest(unittest.TestCase):
         self.assertTrue(rsp_json['success'])
         self.assertIn('users', rsp_json)
         self.assertIn('new_messages', rsp_json)
+        self.assertIn('invitations', rsp_json)
         # All messages are in the response because no last_message_seen_id
         # is specified.
         self.assertEqual(3, len(rsp_json['new_messages']))
