@@ -210,9 +210,11 @@ class ChatClientTest(unittest.TestCase):
                           name='bob', public_key='')
         model.db.session.add(user)
         model.db.session.commit()
+        user_id = user.user_id
 
         invite = model.Invitation(joining_user_id=user.user_id,
                                   approver_user_id=self.users[0].user_id)
+        model.db.session.add(invite)
         model.db.session.commit()
         uri = '/status/{}/{}'.format(self.conversation.conversation_id,
                                      self.users[0].user_id)
@@ -227,7 +229,7 @@ class ChatClientTest(unittest.TestCase):
         invitations = resp_json['invitations']
         self.assertEqual(len(invitations), 1)
         self.assertEqual(invitations[0]['user_id'],
-                         user.user_id)
+                         user_id)
 
     def test_no_new_messages(self):
         """User receives no new messages when there are no new messages.
