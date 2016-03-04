@@ -26,6 +26,14 @@
         <div id="conversation"></div>
     <nav class="navbar navbar-default navbar-fixed-bottom">
         <div class="container">
+            <div class="warning bg-danger" hidden>
+                <span class="warning-message">
+                    <span id="joiner-name"></span>
+                    is trying to join this chat.
+                </span>
+                <button type="button" class="btn btn-success">Approve!</button>
+                <button type="button" class="btn btn-default">Reject.</button>
+            </div>
             <form id="send-message-form">
                 <div class="input-group input-group-lg">
                   <textarea class="form-control" name="message" placeholder="Send a message...."></textarea>
