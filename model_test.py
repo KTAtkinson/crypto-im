@@ -99,6 +99,41 @@ class UserModelTest(unittest.TestCase):
 
         self.assertFalse(user.is_approved())
 
+    def testIsNotRejected(self):
+        """Tests is_rejected method."""
+        self.assertFalse(self.user.is_rejected())
+
+    def testIsRejected(self):
+        """Tests a user that is rejected."""
+        u = model.User(name='bob', public_key='',
+                    conversation_id=self.conversation.conversation_id)
+        model.db.session.add(u)
+        model.db.session.commit()
+        user = u
+
+        invite = model.Invitation(joining_user_id=user.user_id,
+                                  approver_user_id=self.user.user_id,
+                                  is_approved=False)
+        model.db.session.add(invite)
+        model.db.session.commit()
+
+        self.assertTrue(u.is_rejected())
+
+    def testIsNotRejectedIsRejectedNone(self):  
+        """is_rejected returns False when invitation.is_approved is None."""
+        u = model.User(name='bob', public_key='',
+                    conversation_id=self.conversation.conversation_id)
+        model.db.session.add(u)
+        model.db.session.commit()
+        user = u
+
+        invite = model.Invitation(joining_user_id=user.user_id,
+                                  approver_user_id=self.user.user_id)
+        model.db.session.add(invite)
+        model.db.session.commit()
+
+        self.assertFalse(user.is_rejected())
+
 
 class InvitationModelTest(unittest.TestCase):
     """Test for the invitation data model."""

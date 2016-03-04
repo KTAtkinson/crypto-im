@@ -50,13 +50,19 @@ class User(db.Model):
 
     def is_approved(self):
         """Returns True if the user is approved to join their conversation."""
-        invites = Invitation.query.filter(
-                Invitation.joining_user_id==self.user_id)
-        for i in invites:
-            if i.is_approved is False:
+        for decision in self.approvals:
+            if (decision.is_approved is False or
+                decision.is_approved is None):
                 return False
 
         return True
+
+    def is_rejected(self):
+        for decision in self.approvals:
+            if decision.is_approved is False:
+                return True
+
+        return False
 
 
 class Conversation(db.Model):
@@ -98,7 +104,7 @@ class Invitation(db.Model):
                                 nullable=False)
     approver_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
                                  nullable=False)
-    is_approved = db.Column(db.Boolean, default=False)
+    is_approved = db.Column(db.Boolean)
     sent_timestamp = db.Column(db.DateTime)
 
 
