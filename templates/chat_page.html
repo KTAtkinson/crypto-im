@@ -26,13 +26,13 @@
         <div id="conversation"></div>
     <nav class="navbar navbar-default navbar-fixed-bottom">
         <div class="container">
-            <div class="warning bg-danger" hidden>
+            <div class="warning bg-danger" id="join-warning" hidden>
                 <span class="warning-message">
                     <span id="joiner-name"></span>
                     is trying to join this chat.
                 </span>
-                <button type="button" class="btn btn-success">Approve!</button>
-                <button type="button" class="btn btn-default">Reject.</button>
+                <button type="button" class="btn btn-success" data-approved="1">Approve!</button>
+                <button type="button" class="btn btn-default" data-approved="0"">Reject.</button>
             </div>
             <form id="send-message-form">
                 <div class="input-group input-group-lg">

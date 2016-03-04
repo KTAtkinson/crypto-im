@@ -1,3 +1,50 @@
+function inviteResponse(evt) {
+    var button = $(evt.target);
+    var is_approved = Boolean(parseInt($(button).data("approved")));
+    var joiner = button.data("joiner");
+    var accepter = button.data("accepter");
+
+    $.ajax("/invite_ack/" + accepter + "/" + joiner,
+           {data: {is_approved: is_approved}, method: "POST"})
+        .success(function() {
+            invitationMsg = document.getElementById('join-warning');
+            $(invitationMsg).hide();
+            $(invitationMsg.querySelector('#joiner-name'))
+                .text("");
+            $(invitationMsg.getElementsByTagName("button"))
+                .attr("data-joiner", "")
+                .attr("data-accepter", "");
+            });
+}
+
+function showInvites(invite) {
+    if (!invite) {
+        window.setTimeout(checkInvites, 150);
+        return
+    }
+
+    var cookieInfo = getCookieInfo();
+    invitationMsg = document.getElementById('join-warning');
+    $(invitationMsg.querySelector('#joiner-name'))
+        .text(invite.user_name);
+    $(invitationMsg.getElementsByTagName("button"))
+        .attr("data-joiner", invite.user_id)
+        .attr("data-accepter", cookieInfo[0])
+        .click(inviteResponse);
+    $(invitationMsg).show();
+    showInvites(inviteQueue.pop())
+}  
+
+
+function checkInvites() {
+    if (inviteQueue.length > 0) {
+        showInvites(inviteQueue.pop());
+    } else {
+       window.setTimeout(checkInvites, 150);
+    }
+}
+
+
 function getCookieInfo() {
     var cookies = document.cookie.split(";");
 
@@ -24,7 +71,7 @@ function sendMessage(evt) {
     var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
     
-    var encodePromises = []
+var encodePromises = []
     var recipientData = conversation_users.concat([{user_id: uId, public_key: JSON.stringify(publicJWK)}]);
 
     for (var i=0; i<recipientData.length; i++) {
@@ -165,9 +212,10 @@ function pollForMessages(conversation_id, user_id, interval) {
                 var newMessages = resp.new_messages;
                 var chatStream = document.getElementById('conversation');
                 addMessages(chatStream, newMessages);
+                inviteQueue = resp.invitations.concat(inviteQueue)
                 window.conversation_users = resp.users;
                 window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
-           });
+        });
 }
 
 function beforeFormSubmit() {
@@ -201,6 +249,7 @@ function joinSuccess(data) {
     $("#conversation-pane").show();
     $('#send-message-form').submit(sendMessage);
     pollForMessages(data.conversation_id, data.user_id, TIMEOUT);
+    checkInvites(); 
 }
 
 
@@ -234,3 +283,5 @@ var privateKey = null;
 var publicJWK = null;
 var vector = crypto.getRandomValues(new Uint8Array(16));
 var cookieKey = null;
+var inviteQueue = [];
+
