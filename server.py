@@ -99,8 +99,6 @@ def update_user_status(conversation_id, user_id):
     if not verified:
         return flask.json.jsonify({'success': False,
                                    'error': "Was not able to verify user."})
-    pkey = flask.request.form.get('public_key')
-    print "AVAILABLE FORM FIELDS:", flask.request.form.keys()
     user = model.User.query.get(user_id)
     user.public_key = pkey
     user.last_seen = datetime.datetime.now(tz=pytz.utc)
@@ -109,7 +107,6 @@ def update_user_status(conversation_id, user_id):
     # print 'found and updated user.
     last_msg_seen_id = flask.request.form.get('last_message_seen_id')
 
-    print "Getting message."
     if last_msg_seen_id:
         last_message_time = model.Message.query.get(last_msg_seen_id).timestamp
     else:
