@@ -100,6 +100,51 @@ class UserModelTest(unittest.TestCase):
         self.assertFalse(user.is_approved())
 
 
+class InvitationModelTest(unittest.TestCase):
+    """Test for the invitation data model."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Initializes the database."""
+        app = flask.Flask(__name__)
+        app.config['TESTING'] = True
+
+        model.connect_to_db(app, db_name='chat-client-test')
+
+        model.db.drop_all()
+
+    def setUp(self):
+        """Setup database tables."""
+        model.db.create_all()
+
+        self.conversation = model.Conversation(conversation_code='foo')
+        model.db.session.add(self.conversation)
+        model.db.session.commit()
+
+        user = model.User(
+                conversation_id=self.conversation.conversation_id,
+                name='alice', public_key='')
+        model.db.session.add(user)
+        model.db.session.commit()
+        self.user = user
+
+        invitation = model.Invitation(joining_user_id=user.user_id,
+                                      approver_user_id=user.user_id)
+        model.db.session.add(invitation)
+        model.db.session.commit()
+        self.invite = invitation
+
+    def tearDown(self):
+        """Closes database session and drops all tables."""
+        model.db.session.close()
+        model.db.drop_all()
+
+    def testByApproverAndJoiner(self):
+        retrieved = model.Invitation.by_approver_and_joiner(self.user.user_id,
+                                                            self.user.user_id)
+        self.assertEqual(retrieved.invite_id, self.invite.invite_id)
+
+
 if __name__ == '__main__':
     unittest.main()
 

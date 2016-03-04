@@ -59,7 +59,6 @@ class User(db.Model):
         return True
 
 
-
 class Conversation(db.Model):
     """Model for a chat conversation."""
 
@@ -107,6 +106,11 @@ class Invitation(db.Model):
                              foreign_keys='Invitation.joining_user_id',
                              backref=db.backref('approvals'))
 
+    @classmethod
+    def by_approver_and_joiner(cls, joining_user_id, approver_user_id):
+        query = cls.query.filter_by(joining_user_id=joining_user_id,
+                                    approver_user_id=approver_user_id)
+        return query.one_or_none()
 
 
 # The following code was borrowed from a Hackbright skiills assessment on

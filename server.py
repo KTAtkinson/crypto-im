@@ -152,8 +152,13 @@ def update_user_status(conversation_id, user_id):
                     }
             conversation_users_dict_list.append(user_dict)
         else:
-            invitations.append({'user_id': user.user_id,
-                                'user_name': user.name})
+            invite = model.Invitation.by_approver_and_joiner(
+                    user.user_id, user_id)
+            if invite.sent_timestamp is None:
+                invitations.append({'user_id': user.user_id,
+                                    'user_name': user.name})
+                invite.sent_timestamp = datetime.datetime.now(tz=pytz.utc)
+                model.db.session.add(invite)
 
     response = {
             'success': True,
