@@ -52,12 +52,6 @@ def join_chat(conversation_code):
             conversation_id=conversation.conversation_id)
     num_users = user_query.count()
 
-    if num_users > 1:
-        response = {
-                'success': False,
-                'error': 'There is no room in this conversation.'}
-        return flask.json.jsonify(response), 400
-
     name = flask.request.form.get('name')
     pkey = flask.request.form.get('public_key')
     new_user = model.User(name=name, public_key=pkey,
@@ -76,7 +70,8 @@ def join_chat(conversation_code):
             'conversation_id': new_user.conversation_id,
             }
     response = app.make_response(flask.json.jsonify(rsp))
-    response.set_cookie("chat-data-"+str_conv_id, value=str_user_id+":"+str_conv_id)
+    response.set_cookie("chat-data-"+str_conv_id,
+                        value=str_user_id+":"+str_conv_id)
     return response
 
 
@@ -209,13 +204,14 @@ def add_message(conversation_id, user_id):
         return flask.json.jsonify({'success': False,
                                    'error': "Failed to verify user."})
     author = model.User.query.get(user_id)
-    if author.conversation_id != int(conversation_id):
+    if (author.conversation_id != int(conversation_id) and
+        not author.is_approved()):
         response = {
                 'success': False,
                 'error': "You don't have permission to send meesages in "
                             "this chat."
                 }
-        return flask.json.jsonify(response), 403 
+        return flask.json.jsonify(response), 403
 
     messages = flask.json.loads(flask.request.form.get('encoded_messages'))
     for msg_index in messages:
