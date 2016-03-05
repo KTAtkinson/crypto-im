@@ -288,4 +288,4 @@ var publicJWK = null;
 var vector = crypto.getRandomValues(new Uint8Array(16));
 var cookieKey = null;
 var inviteQueue = [];
-
+var conversation_users = []
