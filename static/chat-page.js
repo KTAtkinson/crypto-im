@@ -203,12 +203,16 @@ function pollForMessages(conversation_id, user_id, interval) {
                 error_container.hide();
                 error_container.text(''); }) 
            .error(function(rsp, status_text, err) {
-                var error_container = $('#conversation_-pane .error');
+                var error_container = $('#conversation-pane .error');
                 error_container.text(rsp.data.error || "There was a server error.")
                 error_container.show();
                 window.setTimeout(pollForMessages, interval*1.5, conversation_id, user_id, TIMEOUT*1.5);
                 })
            .done(function(resp) {
+                if (!resp.success) {
+                   window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
+                   return;
+                }
                 var newMessages = resp.new_messages;
                 var chatStream = document.getElementById('conversation');
                 addMessages(chatStream, newMessages);
