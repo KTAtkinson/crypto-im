@@ -204,7 +204,7 @@ def add_message(conversation_id, user_id):
         return flask.json.jsonify({'success': False,
                                    'error': "Failed to verify user."})
     author = model.User.query.get(user_id)
-    if (author.conversation_id != int(conversation_id) and
+    if (author.conversation_id != int(conversation_id) or
         not author.is_approved()):
         response = {
                 'success': False,
