@@ -8,16 +8,8 @@
 {% block content %}
     <form id="add-user-form">
         <fieldset class="form-group">
-            <label>Name:</label>
-            <input class="form-control" name="name" type="text">
-        </fieldset>
-        <fieldset class="form-group">
-            <label>Public key:</label>
-            <textarea class="form-control" name="pkey" placeholder="Paste your RSA public key here...."></textarea>
-        </fieldset>
-        <fieldset class="form-group">
-            <label>Private key:</label>
-            <textarea class="form-control" name="private-key" placeholder="Paste your RSA private key here..."></textarea>
+            <input class="form-control" name="name" type="text" placeholder="What is your name?">
+        <div>This is the name you will use to chat.</div>
         </fieldset>
         <span class="error" hidden></span>
         <input class="form-control" type="submit" value="Start chatting">
@@ -26,6 +18,14 @@
         <div id="conversation"></div>
     <nav class="navbar navbar-default navbar-fixed-bottom">
         <div class="container">
+            <div class="warning bg-danger" id="join-warning" hidden>
+                <span class="warning-message">
+                    <span id="joiner-name"></span>
+                    is trying to join this chat.
+                </span>
+                <button type="button" class="btn btn-success" data-approved="1">Approve!</button>
+                <button type="button" class="btn btn-default" data-approved="0"">Reject.</button>
+            </div>
             <form id="send-message-form">
                 <div class="input-group input-group-lg">
                   <textarea class="form-control" name="message" placeholder="Send a message...."></textarea>

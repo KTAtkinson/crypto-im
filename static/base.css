@@ -43,3 +43,15 @@ body {
 .chat-message {
     padding-bottom: 15px;
 }
+
+.warning {
+    position: absolute;
+    width: 100%;
+    z-index: 100;
+    padding: 15px 1em;
+    font-size: .75em;
+}
+
+.message.warning-message {
+    padding-right: 30px;
+}

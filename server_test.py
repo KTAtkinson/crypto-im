@@ -107,24 +107,14 @@ class ChatClientTest(unittest.TestCase):
 
         self.assertEqual(200, rsp.status_code)
 
-    def test_full_conversation(self):
-        """User receives an error when joining a conversation with two users.
+    def test_invites_added(self):
+        """Invites are created for each user in the conversation."""
+        rsp = self.client.post('/join/join-here', data={'name': 'bob'})
+        rsp_json = json.loads(rsp.data)
 
-        Given:
-            A conversation that already has two users.
-
-        When:
-            Another user tries to join.
-
-        Then:
-            The server returns an error.
-        """
-        conversation_code = self.conversation.conversation_code
-
-        rsp = self.client.post('/join/{}'.format(conversation_code),
-                               data={'name': 'eve', 'public_key': ''})
-
-        self.assertEqual(400, rsp.status_code)
+        invites = model.Invitation.query.filter_by(
+                joining_user_id=rsp_json['new_user_id']).count()
+        self.assertNotEqual(int(invites), 0)
 
     def test_status(self):
         """Test that /status route returns JSON response.
@@ -141,6 +131,7 @@ class ChatClientTest(unittest.TestCase):
         """
         conversation_id = self.conversation.conversation_id
         user_id = self.users[0].user_id
+        self.setup_invites()
 
         uri = '/status/{}/{}'.format(conversation_id, user_id)
         self.set_session_cookie(user_id, conversation_id)
@@ -154,6 +145,7 @@ class ChatClientTest(unittest.TestCase):
         self.assertTrue(rsp_json['success'])
         self.assertIn('users', rsp_json)
         self.assertIn('new_messages', rsp_json)
+        self.assertIn('invitations', rsp_json)
         # All messages are in the response because no last_message_seen_id
         # is specified.
         self.assertEqual(3, len(rsp_json['new_messages']))
@@ -172,6 +164,7 @@ class ChatClientTest(unittest.TestCase):
                 message_id provided by the client.
         """
         conversation_id = self.conversation.conversation_id
+        self.setup_invites()
         user_id = self.users[0].user_id
         message_id = self.msgs[1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
@@ -190,6 +183,23 @@ class ChatClientTest(unittest.TestCase):
         # i specified.
         self.assertEqual(2, len(rsp_json['new_messages']))
 
+    def test_new_invitation(self):
+        """User recieves an invitation when there is one outstanding."""
+        (approval_user_id,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites()
+        uri = '/status/{}/{}'.format(conversation_id, approval_user_id)
+        self.set_user_cookie(approval_user_id, conversation_id)
+        self.set_session_cookie(approval_user_id, conversation_id)
+        resp = self.client.post(
+                uri, data={'public_key':'', 'last_message_seen_id': None})
+        resp_json = json.loads(resp.data)
+
+        invitations = resp_json['invitations']
+        self.assertEqual(len(invitations), 1)
+        self.assertEqual(invitations[0]['user_id'], joining_user_id)
+
     def test_no_new_messages(self):
         """User receives no new messages when there are no new messages.
 
@@ -203,6 +213,7 @@ class ChatClientTest(unittest.TestCase):
             The users should not recieve any new messages
         """
         conversation_id = self.conversation.conversation_id
+        self.setup_invites()
         user_id = self.users[0].user_id
         message_id = self.msgs[-1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
@@ -214,6 +225,54 @@ class ChatClientTest(unittest.TestCase):
         rsp_json = json.loads(rsp.data)
 
         self.assertEqual(0, len(rsp_json['new_messages']))
+
+    def test_not_approved_user(self):
+        """Not approved user recieves and error when updating status."""
+        (_,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites(is_approved=None)
+        self.set_session_cookie(joining_user_id, conversation_id)
+        self.set_user_cookie(joining_user_id, conversation_id)
+        uri = '/status/{}/{}'.format(conversation_id, joining_user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': 0})
+
+        rsp_json = json.loads(rsp.data)
+        self.assertFalse(rsp_json['success'])
+
+    def test_not_approved_user(self):
+        """Not approved user recieves and error when updating status."""
+        (_,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites(is_approved=False)
+        self.set_session_cookie(joining_user_id, conversation_id)
+        self.set_user_cookie(joining_user_id, conversation_id)
+        uri = '/status/{}/{}'.format(conversation_id, joining_user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': 0})
+
+        rsp_json = json.loads(rsp.data)
+        self.assertFalse(rsp_json['success'])
+
+    def test_ack_invitation(self):
+        """Test acknowledging an invitation."""
+        (approver_user_id,
+         joining_user_id,
+         _,
+         invite_id) = self.setup_invites()
+        uri = '/invite_ack/{}/{}'.format(approver_user_id, joining_user_id)
+        rsp = self.client.post(uri, data={'approves': True})
+        rsp_json = json.loads(rsp.data)
+
+        invite = model.Invitation.query.get(invite_id)
+        self.assertEqual(rsp_json['success'], True)
+        self.assertEqual(rsp.status_code, 200)
+        self.assertEqual(invite.invite_id, invite_id)
+
 
     def test_send_message(self):
         """User can send message through '/add_message' route.
@@ -256,6 +315,27 @@ class ChatClientTest(unittest.TestCase):
             with c.session_transaction() as sess:
                 sess[str(conversation_id)] = (
                         ":".join([str(user_id), str(conversation_id)]))
+
+    def setup_invites(self, is_approved=False):
+        approver = self.users[0]
+        conversation_id = self.conversation.conversation_id
+        invite = model.Invitation(joining_user_id=approver.user_id,
+                                  approver_user_id=approver.user_id,
+                                  is_approved=True)
+        model.db.session.add(invite)
+        joiner = model.User(conversation_id=conversation_id,
+                           name='bob', public_key='')
+        model.db.session.add(joiner)
+        model.db.session.commit()
+        joiner_user_id = joiner.user_id 
+
+        invite = model.Invitation(joining_user_id=joiner_user_id,
+                                  approver_user_id=approver.user_id,
+                                  is_approved=is_approved)
+        model.db.session.add(invite)
+        model.db.session.commit()
+        return (approver.user_id, joiner_user_id, conversation_id,
+                invite.invite_id)
 
 
 if __name__ == '__main__':

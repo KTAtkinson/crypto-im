@@ -22,6 +22,48 @@ class User(db.Model):
             db.ForeignKey('conversations.conversation_id'),
             nullable=False)
 
+    def add_invites(self):
+        users = User.query.filter(
+                User.conversation_id==self.conversation_id,
+                User.user_id!=self.user_id).all()
+        approver_ids = []
+
+        # If there are no other users create approved invite in which the joining
+        # user is both the joiner and the approver.
+        if not users:
+            invitation = Invitation(joining_user_id=self.user_id,
+                                    approver_user_id=self.user_id,
+                                    is_approved=True)
+            db.session.add(invitation)
+
+        for user in users:
+            if not Invitation.query.filter_by(joining_user_id=user.user_id,
+                                           is_approved=False).all():
+                approver_ids.append(user.user_id)
+
+        for user_id in approver_ids:
+             invitation = Invitation(joining_user_id=self.user_id,
+                                     approver_user_id=user_id)
+             db.session.add(invitation)
+
+        db.session.commit()
+
+    def is_approved(self):
+        """Returns True if the user is approved to join their conversation."""
+        for decision in self.approvals:
+            if (decision.is_approved is False or
+                decision.is_approved is None):
+                return False
+
+        return True
+
+    def is_rejected(self):
+        for decision in self.approvals:
+            if decision.is_approved is False:
+                return True
+
+        return False
+
 
 class Conversation(db.Model):
     """Model for a chat conversation."""
@@ -52,6 +94,29 @@ class Message(db.Model):
     @classmethod
     def get_by_message_id(cls, message_id):
         return cls.query.get(message_id)
+
+
+class Invitation(db.Model):
+    """Model for chat invitations."""
+    __tablename__ = "invitations"
+    invite_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    joining_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
+                                nullable=False)
+    approver_user_id = db.Column(db.Integer, db.ForeignKey('users.user_id'),
+                                 nullable=False)
+    is_approved = db.Column(db.Boolean)
+    sent_timestamp = db.Column(db.DateTime)
+
+
+    joinee = db.relationship('User',
+                             foreign_keys='Invitation.joining_user_id',
+                             backref=db.backref('approvals'))
+
+    @classmethod
+    def by_approver_and_joiner(cls, joining_user_id, approver_user_id):
+        query = cls.query.filter_by(joining_user_id=joining_user_id,
+                                    approver_user_id=approver_user_id)
+        return query.one_or_none()
 
 
 # The following code was borrowed from a Hackbright skiills assessment on
@@ -87,9 +152,9 @@ def seed(app):
     # Create two users in the conversation.
     user1 = User(name='alice', conversation_id=conversation.conversation_id,
                  public_key='')
+    db.session.add(user1)
     user2 = User(name='bob', conversation_id=conversation.conversation_id,
                  public_key='')
-    db.session.add(user1)
     db.session.add(user2)
     db.session.commit()
 

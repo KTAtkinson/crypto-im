@@ -52,18 +52,13 @@ def join_chat(conversation_code):
             conversation_id=conversation.conversation_id)
     num_users = user_query.count()
 
-    if num_users > 1:
-        response = {
-                'success': False,
-                'error': 'There is no room in this conversation.'}
-        return flask.json.jsonify(response), 400
-
     name = flask.request.form.get('name')
     pkey = flask.request.form.get('public_key')
     new_user = model.User(name=name, public_key=pkey,
                           conversation_id=conversation.conversation_id)
     model.db.session.add(new_user)
     model.db.session.commit()
+    new_user.add_invites()
 
     str_user_id = str(new_user.user_id)
     str_conv_id = str(conversation.conversation_id)
@@ -75,7 +70,8 @@ def join_chat(conversation_code):
             'conversation_id': new_user.conversation_id,
             }
     response = app.make_response(flask.json.jsonify(rsp))
-    response.set_cookie("chat-data-"+str_conv_id, value=str_user_id+":"+str_conv_id)
+    response.set_cookie("chat-data-"+str_conv_id,
+                        value=str_user_id+":"+str_conv_id)
     return response
 
 
@@ -98,17 +94,22 @@ def update_user_status(conversation_id, user_id):
     if not verified:
         return flask.json.jsonify({'success': False,
                                    'error': "Was not able to verify user."})
-    pkey = flask.request.form.get('public_key')
-    print "AVAILABLE FORM FIELDS:", flask.request.form.keys()
     user = model.User.query.get(user_id)
+    if user.is_rejected():
+        error = "You don't have permission to be in this chat."
+        return flask.json.jsonify({'success': False, 'error': error})
+    pkey = flask.request.form.get('public_key')
     user.public_key = pkey
     user.last_seen = datetime.datetime.now(tz=pytz.utc)
     model.db.session.add(user)
 
+    if not user.is_approved():
+        error = "Getting permission from others in the chat for you to join."
+        model.db.session.commit()
+        return flask.json.jsonify({'success': False, 'error': error})
     # print 'found and updated user.
     last_msg_seen_id = flask.request.form.get('last_message_seen_id')
 
-    print "Getting message."
     if last_msg_seen_id:
         last_message_time = model.Message.query.get(last_msg_seen_id).timestamp
     else:
@@ -135,27 +136,53 @@ def update_user_status(conversation_id, user_id):
     conversation_users = model.User.query.filter(
             model.User.conversation_id == conversation_id,
             model.User.user_id != user_id).all()
+
     print conversation_users
 
     # TODO: Move to model.Users
     conversation_users_dict_list = []
+    invitations = []
     for user in conversation_users:
-        time_inactive = datetime.datetime.now(tz=pytz.utc) - user.last_seen
-        user_dict = {
-                'user_id': user.user_id,
-                'public_key': user.public_key,
-                'inactive_secs': time_inactive.total_seconds()
-                }
-        conversation_users_dict_list.append(user_dict)
+        if user.is_approved():
+            time_inactive = datetime.datetime.now(tz=pytz.utc) - user.last_seen
+            user_dict = {
+                    'user_id': user.user_id,
+                    'public_key': user.public_key,
+                    'inactive_secs': time_inactive.total_seconds()
+                    }
+            conversation_users_dict_list.append(user_dict)
+        else:
+            invite = model.Invitation.by_approver_and_joiner(
+                    user.user_id, user_id)
+            if invite.sent_timestamp is None:
+                invitations.append({'user_id': user.user_id,
+                                    'user_name': user.name})
+                invite.sent_timestamp = datetime.datetime.now(tz=pytz.utc)
+                model.db.session.add(invite)
 
     response = {
             'success': True,
+            'error': '',
             'users': conversation_users_dict_list,
-            'new_messages': new_message_dict_list
+            'invitations': invitations,
+            'new_messages': new_message_dict_list,
             }
     model.db.session.commit()
     return flask.json.jsonify(response)
 
+
+@app.route('/invite_ack/<int:responder_user_id>/<int:joining_user_id>',
+           methods=['POST'])
+def invitation_ack(responder_user_id, joining_user_id):
+    is_approved = flask.request.form.get('is_approved')
+    query = model.Invitation.query.filter_by(joining_user_id=joining_user_id,
+                                             approver_user_id=responder_user_id)
+    invite = query.one()
+    invite.is_approved = is_approved
+    model.db.session.add(invite)
+    model.db.session.commit()
+
+    return flask.json.jsonify({'success': True})
 
 @app.route('/add_message/<string:conversation_id>/<string:user_id>',
            methods=['POST'])
@@ -177,13 +204,14 @@ def add_message(conversation_id, user_id):
         return flask.json.jsonify({'success': False,
                                    'error': "Failed to verify user."})
     author = model.User.query.get(user_id)
-    if author.conversation_id != int(conversation_id):
+    if (author.conversation_id != int(conversation_id) or
+        not author.is_approved()):
         response = {
                 'success': False,
                 'error': "You don't have permission to send meesages in "
                             "this chat."
                 }
-        return flask.json.jsonify(response), 403 
+        return flask.json.jsonify(response), 403
 
     messages = flask.json.loads(flask.request.form.get('encoded_messages'))
     for msg_index in messages:
