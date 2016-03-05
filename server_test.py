@@ -107,25 +107,6 @@ class ChatClientTest(unittest.TestCase):
 
         self.assertEqual(200, rsp.status_code)
 
-    def test_full_conversation(self):
-        """User receives an error when joining a conversation with two users.
-
-        Given:
-            A conversation that already has two users.
-
-        When:
-            Another user tries to join.
-
-        Then:
-            The server returns an error.
-        """
-        conversation_code = self.conversation.conversation_code
-
-        rsp = self.client.post('/join/{}'.format(conversation_code),
-                               data={'name': 'eve', 'public_key': ''})
-
-        self.assertEqual(400, rsp.status_code)
-
     def test_invites_added(self):
         """Invites are created for each user in the conversation."""
         rsp = self.client.post('/join/join-here', data={'name': 'bob'})
@@ -150,6 +131,7 @@ class ChatClientTest(unittest.TestCase):
         """
         conversation_id = self.conversation.conversation_id
         user_id = self.users[0].user_id
+        self.setup_invites()
 
         uri = '/status/{}/{}'.format(conversation_id, user_id)
         self.set_session_cookie(user_id, conversation_id)
@@ -182,6 +164,7 @@ class ChatClientTest(unittest.TestCase):
                 message_id provided by the client.
         """
         conversation_id = self.conversation.conversation_id
+        self.setup_invites()
         user_id = self.users[0].user_id
         message_id = self.msgs[1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
@@ -230,6 +213,7 @@ class ChatClientTest(unittest.TestCase):
             The users should not recieve any new messages
         """
         conversation_id = self.conversation.conversation_id
+        self.setup_invites()
         user_id = self.users[0].user_id
         message_id = self.msgs[-1].message_id
         uri = '/status/{}/{}'.format(conversation_id, user_id)
@@ -241,6 +225,38 @@ class ChatClientTest(unittest.TestCase):
         rsp_json = json.loads(rsp.data)
 
         self.assertEqual(0, len(rsp_json['new_messages']))
+
+    def test_not_approved_user(self):
+        """Not approved user recieves and error when updating status."""
+        (_,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites(is_approved=None)
+        self.set_session_cookie(joining_user_id, conversation_id)
+        self.set_user_cookie(joining_user_id, conversation_id)
+        uri = '/status/{}/{}'.format(conversation_id, joining_user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': 0})
+
+        rsp_json = json.loads(rsp.data)
+        self.assertFalse(rsp_json['success'])
+
+    def test_not_approved_user(self):
+        """Not approved user recieves and error when updating status."""
+        (_,
+         joining_user_id,
+         conversation_id,
+         _) = self.setup_invites(is_approved=False)
+        self.set_session_cookie(joining_user_id, conversation_id)
+        self.set_user_cookie(joining_user_id, conversation_id)
+        uri = '/status/{}/{}'.format(conversation_id, joining_user_id)
+        rsp = self.client.post(uri,
+                               data={'public_key': '',
+                                     'last_message_seen_id': 0})
+
+        rsp_json = json.loads(rsp.data)
+        self.assertFalse(rsp_json['success'])
 
     def test_ack_invitation(self):
         """Test acknowledging an invitation."""

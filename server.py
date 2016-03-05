@@ -100,10 +100,18 @@ def update_user_status(conversation_id, user_id):
         return flask.json.jsonify({'success': False,
                                    'error': "Was not able to verify user."})
     user = model.User.query.get(user_id)
+    if user.is_rejected():
+        error = "You don't have permission to be in this chat."
+        return flask.json.jsonify({'success': False, 'error': error})
+    pkey = flask.request.form.get('public_key')
     user.public_key = pkey
     user.last_seen = datetime.datetime.now(tz=pytz.utc)
     model.db.session.add(user)
 
+    if not user.is_approved():
+        error = "Getting permission from others in the chat for you to join."
+        model.db.session.commit()
+        return flask.json.jsonify({'success': False, 'error': error})
     # print 'found and updated user.
     last_msg_seen_id = flask.request.form.get('last_message_seen_id')
 
@@ -159,6 +167,7 @@ def update_user_status(conversation_id, user_id):
 
     response = {
             'success': True,
+            'error': '',
             'users': conversation_users_dict_list,
             'invitations': invitations,
             'new_messages': new_message_dict_list,
