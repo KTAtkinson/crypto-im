@@ -70,7 +70,7 @@ function sendMessage(evt) {
     
     var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
-    
+
 var encodePromises = []
     var recipientData = conversation_users.concat([{user_id: uId, public_key: JSON.stringify(publicJWK)}]);
 
@@ -88,23 +88,21 @@ var encodePromises = []
                 }
                 var request = {'encoded_messages': JSON.stringify(msgsObj)};
                 // var request = {'key': [{'user_id': user_id}, {'key1', messageText}]};
-        
+                var error_container = $('#conversation-pane .error');
+                error_container
+                    .hide()
+                    .text('');
                 $.ajax('/add_message/' + cId + '/' + uId,
                        {'method':'POST', 'data':request})
-                    .always(function() {
-                            var error_container = $('#conversation-pane .error');
-                            error_container
-                                .hide()
-                                .text('');
-                        })
                    .done(function(data, status_text, xhr) {
                            $(messageInput).val('');
                        })
                    .fail(function(xhr, status_text, err) {
-                        err = xhr.responseJSON.error || status_text
+                        err = xhr.responseJSON.error || status_text;
                         var error_container = $('#conversation-pane .error');
                         error_container.text(err);
                         error_container.show();
+                        debugger;
                         })},
             function(err) {console.log(err)});
 }
@@ -196,16 +194,14 @@ function pollForMessages(conversation_id, user_id, interval) {
             'public_key': JSON.stringify(publicJWK),
             'last_message_seen_id': last_message_id
             }
-
+    var error_container = $('#conversation-pane .error');
+    error_container.hide();
+    error_container.text(''); 
     $.ajax('/status/' + cId + '/' + uId,
            {'method': 'POST', 'data':request})
-           .beforeSend(function() {
+          .error(function(xhr, status_text, err) {
                 var error_container = $('#conversation-pane .error');
-                error_container.hide();
-                error_container.text(''); }) 
-           .error(function(rsp, status_text, err) {
-                var error_container = $('#conversation-pane .error');
-                error_container.text(rsp.data.error || "There was a server error.")
+                error_container.text(xhr.responseJSON.error || "There was a server error.")
                 error_container.show();
                 window.setTimeout(pollForMessages, interval*1.5, conversation_id, user_id, TIMEOUT*1.5);
                 })
@@ -220,7 +216,7 @@ function pollForMessages(conversation_id, user_id, interval) {
                 inviteQueue = resp.invitations.concat(inviteQueue)
                 window.conversation_users = resp.users;
                 window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
-        });
+        }); 
 }
 
 function beforeFormSubmit() {
