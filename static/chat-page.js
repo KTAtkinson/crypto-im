@@ -97,14 +97,15 @@ var encodePromises = []
                                 .hide()
                                 .text('');
                         })
-                       .done(function(data, status_text, xhr) {
-                               $(messageInput).val('');
-                           })
-                       .fail(function(xhr, status_text, err) {
-                            var error_container = $('#conversation-pane .error');
-                            error_container.text(err);
-                            error_container.show();
-                            })},
+                   .done(function(data, status_text, xhr) {
+                           $(messageInput).val('');
+                       })
+                   .fail(function(xhr, status_text, err) {
+                        err = xhr.responseJSON.error || status_text
+                        var error_container = $('#conversation-pane .error');
+                        error_container.text(err);
+                        error_container.show();
+                        })},
             function(err) {console.log(err)});
 }
 
@@ -198,7 +199,7 @@ function pollForMessages(conversation_id, user_id, interval) {
 
     $.ajax('/status/' + cId + '/' + uId,
            {'method': 'POST', 'data':request})
-           .always(function() {
+           .beforeSend(function() {
                 var error_container = $('#conversation-pane .error');
                 error_container.hide();
                 error_container.text(''); }) 

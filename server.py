@@ -208,7 +208,7 @@ def add_message(conversation_id, user_id):
         not author.is_approved()):
         response = {
                 'success': False,
-                'error': "You don't have permission to send meesages in "
+                'error': "You don't have permission to send messages in "
                             "this chat."
                 }
         return flask.json.jsonify(response), 403
