@@ -15,10 +15,13 @@
         <input class="form-control" type="submit" value="Start chatting">
     </form>
     <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+        <div class="error alert" hidden></div>
         <div id="conversation"></div>
-    <nav class="navbar navbar-default navbar-fixed-bottom">
-        <div class="container">
-            <div class="warning bg-danger" id="join-warning" hidden>
+</div>
+{% endblock %}
+{% block footer %}
+    <nav class="navbar navbar-default navbar-fixed-bottom" id="send-msg-bar" hidden>
+            <div class="warning alert alert-danger" id="join-warning" hidden>
                 <span class="warning-message">
                     <span id="joiner-name"></span>
                     is trying to join this chat.
@@ -34,10 +37,8 @@
                         <span class="glyphicon glyphicon-send"></span>
                     </button>
                   </span>
-                </div><!-- /input-group -->
-                <span class="error" hidden></span>
+                </div>
+                <span class="error alert alert-warning" hidden></span>
             </form>
-        </div>
     </nav>
-    </div>
 {% endblock %}

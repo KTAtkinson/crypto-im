@@ -71,7 +71,7 @@ function sendMessage(evt) {
     var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
 
-var encodePromises = []
+    var encodePromises = []
     var recipientData = conversation_users.concat([{user_id: uId, public_key: JSON.stringify(publicJWK)}]);
 
     for (var i=0; i<recipientData.length; i++) {
@@ -88,7 +88,7 @@ var encodePromises = []
                 }
                 var request = {'encoded_messages': JSON.stringify(msgsObj)};
                 // var request = {'key': [{'user_id': user_id}, {'key1', messageText}]};
-                var error_container = $('#conversation-pane .error');
+                var error_container = $('#send-msg-bar .error');
                 error_container
                     .hide()
                     .text('');
@@ -99,7 +99,7 @@ var encodePromises = []
                        })
                    .fail(function(xhr, status_text, err) {
                         err = xhr.responseJSON.error || status_text;
-                        var error_container = $('#conversation-pane .error');
+                        var error_container = $('#send-msg-bar .error');
                         error_container.text(err);
                         error_container.show();
                         debugger;
@@ -249,6 +249,7 @@ function joinSuccess(data) {
     $("#add-user-form").hide();
     $("#conversation-pane").show();
     $('#send-message-form').submit(sendMessage);
+    $('#send-msg-bar').show();
     pollForMessages(data.conversation_id, data.user_id, TIMEOUT);
     checkInvites(); 
 }
