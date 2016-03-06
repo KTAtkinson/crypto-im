@@ -98,7 +98,7 @@ def update_user_status(conversation_id, user_id):
     if user.is_rejected():
         rsp = {
                 'success': False,
-                'error': "You don't have permission tobe in this chat.",
+                'error': "You don't have permission to be in this chat.",
                 'alert_type': 'danger',
                 }
         return flask.json.jsonify(rsp), 403
