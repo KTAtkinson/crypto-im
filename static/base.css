@@ -59,6 +59,17 @@ body {
     font-size: 1.5em;
 }
 
-.notif .message {
-    margin-right: wwpx;
+.input-group-lg>.form-control, .input-group-lg>.input-group-addon, .input-group-lg>.input-group-btn>.btn {
+    height: 6em;
+    margin: 15px;
 }
+
+.input-group {
+    height: 6em;
+}
+
+textarea {
+    resize: None;
+}
+
+

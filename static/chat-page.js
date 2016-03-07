@@ -9,6 +9,8 @@ function inviteResponse(evt) {
         .success(function() {
             invitationMsg = document.getElementById('join-warning');
             $(invitationMsg).hide();
+            $('#send-message-form textarea, #send-message-form button')
+                .prop('disabled', false)
             $(invitationMsg.querySelector('#joiner-name'))
                 .text("");
             $(invitationMsg.getElementsByTagName("button"))
@@ -26,6 +28,8 @@ function showInvites(invite) {
     }
 
     var cookieInfo = getCookieInfo();
+    $('#send-message-form textarea, #send-message-form button')
+        .prop('disabled', true)
     invitationMsg = document.getElementById('join-warning');
     $(invitationMsg.querySelector('#joiner-name'))
         .text(invite.user_name);
