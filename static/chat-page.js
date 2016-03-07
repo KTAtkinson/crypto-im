@@ -160,12 +160,16 @@ function addMessages(stream, msgs) {
                     $(userImage)
                         .addClass("user-image")
                         .addClass("glyphicon glyphicon-user")
+                        .addClass('col-xs-3')
+                        .addClass('col-sm-2')
                         .addClass('col-md-1');
                     newEntry.appendChild(userImage)
 
                     var msgContent = document.createElement("div");
                     $(msgContent)
                         .addClass("message-content")
+                        .addClass("col-xs-9")
+                        .addClass("col-sm-10")
                         .addClass("col-md-11");
                     newEntry.appendChild(msgContent);
 
