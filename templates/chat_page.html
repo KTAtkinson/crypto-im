@@ -11,18 +11,18 @@
             <input class="form-control" name="name" type="text" placeholder="What is your name?">
         <div>This is the name you will use to chat.</div>
         </fieldset>
-        <span class="error" hidden></span>
+        <span class="warning alert" hidden></span>
         <input class="form-control" type="submit" value="Start chatting">
     </form>
     <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
-        <div class="error alert" hidden></div>
+        <div class="notif warning alert" hidden></div>
         <div id="conversation"></div>
 </div>
 {% endblock %}
 {% block footer %}
-    <nav class="navbar navbar-default navbar-fixed-bottom" id="send-msg-bar" hidden>
-            <div class="warning alert alert-danger" id="join-warning" hidden>
-                <span class="warning-message">
+    <nav class="navbar bottom navbar-default navbar-fixed-bottom" id="send-msg-bar" hidden>
+            <div class="notif warning alert alert-danger" id="join-warning" hidden>
+                <span class="message">
                     <span id="joiner-name"></span>
                     is trying to join this chat.
                 </span>
@@ -38,7 +38,7 @@
                     </button>
                   </span>
                 </div>
-                <span class="error alert alert-warning" hidden></span>
+                <div class="notif alert alert-warning"  hidden></div>
             </form>
     </nav>
 {% endblock %}

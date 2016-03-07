@@ -6,6 +6,9 @@ body {
 .navbar {
     padding-top: 15px;
     padding-bottom: 15px;
+}
+
+.navbar.top {
     font-size: 2em;
 }
 
@@ -44,14 +47,18 @@ body {
     padding-bottom: 15px;
 }
 
-.warning {
-    position: absolute;
+.notif {
     width: 100%;
-    z-index: 100;
     padding: 15px 1em;
-    font-size: .75em;
+    margin: 0;
 }
 
-.message.warning-message {
-    padding-right: 30px;
+.warning {
+    position: absolute;
+    z-index: 100;
+    font-size: 1.5em;
+}
+
+.notif .message {
+    margin-right: wwpx;
 }
