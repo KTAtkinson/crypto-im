@@ -115,7 +115,7 @@ def update_user_status(conversation_id, user_id):
                 'error': 'Getting permission for you to join.',
                 'alert_type': 'info',
                 }
-        return flask.json.jsonify({'success': False, 'error': error}), 401
+        return flask.json.jsonify(rsp), 401
     # print 'found and updated user.
     last_msg_seen_id = flask.request.form.get('last_message_seen_id')
 
