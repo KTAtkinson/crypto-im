@@ -1,4 +1,4 @@
-ryptoIM
+###CryptoIM
 
 CryptoIM is a chat client that leverages the crypto Javascript library, new with ES6, to create RSA keys, and encrypt and decrypt messages in the browser. 
 
@@ -28,15 +28,19 @@ First you'll need:
 * [virtualenv] (recommended) - To keep all the dependancies in order
 
 To get the server running:
+
 1. Create a virtual environment.
+
 2. Activate your virtual environment:
     ```sh
     $ <path_to_env>/bin/activate
     ```
+
 3. Clone github repo:
     ```sh
     $ git clone https://github.com/KTAtkinson/crypto-im
     ```
+
 4. Install python depencencies in your virtual env:
     ```sh
     $ pip install -r <path_to_project>/requirements.txt
@@ -45,7 +49,9 @@ To get the server running:
     ```sh
     $ python <path_to_project>/server.py
     ```
+
 6. Navigate to localhost:5000 in your web browser.
+
 7. To stop the server type Ctrl+c in your terminal.
 
 In order to have a conversation between two different users they must be in different browser sessions. The easiest way to do this is to have one window open in your session and another open in an incognito/in-private window.
