@@ -193,6 +193,12 @@ def invitation_ack(responder_user_id, joining_user_id):
 
     return flask.json.jsonify({'success': True})
 
+
+@app.route('/')
+def show_home_page():
+    return flask.render_template('home-page.html')
+
+
 @app.route('/add_message/<string:conversation_id>/<string:user_id>',
            methods=['POST'])
 def add_message(conversation_id, user_id):
