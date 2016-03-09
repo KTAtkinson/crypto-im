@@ -1,8 +1,8 @@
-sudo: required
+sudo: false
 language: python
 python:
     - "2.7.11"
-install: "pip install -r requirements.txt"
+install: "pip install --user -r requirements.txt"
 
 language: node_js
 node_js:
