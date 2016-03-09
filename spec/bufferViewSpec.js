@@ -7,7 +7,7 @@ describe('Test buffer view', function() {
 
     it('should fail', function() {
         var chars = bv.arrayBufferViewToStr(new Uint8Array([116, 104, 105, 115]));
-        expect(chars).toEqual('this`');
+        expect(chars).toEqual('this');
     });
 });
 
