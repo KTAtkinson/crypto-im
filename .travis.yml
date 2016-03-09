@@ -3,7 +3,7 @@ language: python
 python:
     - "2.7.11"
 install: "pip install --user -r requirements.txt"
-script: python unittest discover -p "*_test.py"
+script: python -m unittest discover -p "*_test.py"
 
 language: node_js
 node_js:
