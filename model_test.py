@@ -15,7 +15,7 @@ class UserModelTest(unittest.TestCase):
         app = flask.Flask(__name__)
         app.config['TESTING'] = True
 
-        model.connect_to_db(app, db_name='chat-client-test')
+        model.connect_to_db(app, db_name='chat_client_test')
 
         model.db.drop_all()
 
@@ -144,7 +144,7 @@ class InvitationModelTest(unittest.TestCase):
         app = flask.Flask(__name__)
         app.config['TESTING'] = True
 
-        model.connect_to_db(app, db_name='chat-client-test')
+        model.connect_to_db(app, db_name='chat_client_test')
 
         model.db.drop_all()
 

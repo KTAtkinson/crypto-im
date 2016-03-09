@@ -17,7 +17,7 @@ class ChatClientTest(unittest.TestCase):
         cls.client = server.app.test_client()
         server.app.config['TESTING'] = True
 
-        model.connect_to_db(server.app, db_name='chat-client-test')
+        model.connect_to_db(server.app, db_name='chat_client_test')
         # Clear any data that may be in the database.
         model.db.drop_all()
 
