@@ -1,7 +1,8 @@
 sudo: false
 services:
     - postgresql
-before_script: psql -c 'create database chat_client_test;' -U postgres
+before_script:
+    - psql -c 'create database chat_client_test;' -U postgres
 
 language: python
 python:
