@@ -1,4 +1,4 @@
-var bv = require('../bufferView.js');
+var bv = require('../static/bufferView.js');
 describe('Test buffer view', function() {
     it('convert string into an array of char codes.', function() {
         var output = bv.strToArrayBufferView('this');
