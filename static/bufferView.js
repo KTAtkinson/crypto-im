@@ -20,3 +20,8 @@ function escapeChar(chr) {
 function unescapeChar(escapeStr) {
     return String.fromCharCode(escapeStr.slice(2, -1));
 }
+
+module.exports = {
+    strToArrayBufferView: strToArrayBufferView,
+    arrayBufferViewToStr: arrayBufferViewToStr
+};
