@@ -51,6 +51,8 @@ To get the server running:
     ```
 
 6. Navigate to localhost:5000 in your web browser.
+  ![Image of front page]
+  (https://github.com/KTAtkinson/crypto-im/blob/master/docs/img/Screen%20Shot%202016-03-08%20at%205.53.16%20PM.png)
 
 7. To stop the server type Ctrl+c in your terminal.
 
