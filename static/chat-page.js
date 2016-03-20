@@ -7,7 +7,7 @@ function inviteResponse(evt) {
     $.ajax("/invite_ack/" + accepter + "/" + joiner,
            {data: {is_approved: is_approved}, method: "POST"})
         .success(function() {
-            invitationMsg = document.getElementById('join-warning');
+            nvitationMsg = document.getElementById('join-warning');
             $(invitationMsg).hide();
             $('#send-message-form textarea, #send-message-form button')
                 .prop('disabled', false)
