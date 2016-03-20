@@ -1,10 +1,83 @@
+function inviteResponse(evt) {
+    var button = $(evt.target);
+    var is_approved = Boolean(parseInt($(button).data("approved")));
+    var joiner = button.data("joiner");
+    var accepter = button.data("accepter");
+
+    $.ajax("/invite_ack/" + accepter + "/" + joiner,
+           {data: {is_approved: is_approved}, method: "POST"})
+        .success(function() {
+            invitationMsg = document.getElementById('join-warning');
+            $(invitationMsg).hide();
+            $('#send-message-form textarea, #send-message-form button')
+                .prop('disabled', false)
+            $(invitationMsg.querySelector('#joiner-name'))
+                .text("");
+            $(invitationMsg.getElementsByTagName("button"))
+                .attr("data-joiner", "")
+                .attr("data-accepter", "");
+            showInvites(inviteQueue.pop());
+            });
+
+}
+
+function showInvites(invite) {
+    if (!invite) {
+        window.setTimeout(checkInvites, 150);
+        return
+    }
+
+    var cookieInfo = getCookieInfo();
+    $('#send-message-form textarea, #send-message-form button')
+        .prop('disabled', true)
+    invitationMsg = document.getElementById('join-warning');
+    $(invitationMsg.querySelector('#joiner-name'))
+        .text(invite.user_name);
+    $(invitationMsg.getElementsByTagName("button"))
+        .attr("data-joiner", invite.user_id)
+        .attr("data-accepter", cookieInfo[0])
+        .click(inviteResponse);
+    $(invitationMsg).show();
+}  
+
+
+function checkInvites() {
+    if (inviteQueue.length > 0) {
+        showInvites(inviteQueue.pop());
+    } else {
+       window.setTimeout(checkInvites, 150);
+    }
+}
+
+
+function getCookieInfo() {
+    var cookies = document.cookie.split(";");
+
+    var uId, cId
+    for (var i=0; i<cookies.length; i++) {
+        var cookie = cookies[i].split("=");
+        if (cookie[0].trim() == cookieKey) {
+            var values = cookie[1].split(":");
+            var uId = values[0];
+            var cId = values[1];
+            break;
+        }
+    }
+    return [uId, cId]
+}
+
+
 function sendMessage(evt) {
+    var cookieData = getCookieInfo();
+    var uId = cookieData[0];
+    var cId = cookieData[1];
     evt.preventDefault();
+    
     var messageInput = evt.target.querySelector('textarea[name="message"]');
     var messageText = $(messageInput).val();
-    
+
     var encodePromises = []
-    var recipientData = conversation_users.concat([{user_id: user_id, public_key: JSON.stringify(publicJWK)}]);
+    var recipientData = conversation_users.concat([{user_id: uId, public_key: JSON.stringify(publicJWK)}]);
 
     for (var i=0; i<recipientData.length; i++) {
         var recipient = recipientData[i];
@@ -20,23 +93,22 @@ function sendMessage(evt) {
                 }
                 var request = {'encoded_messages': JSON.stringify(msgsObj)};
                 // var request = {'key': [{'user_id': user_id}, {'key1', messageText}]};
-        
-                $.ajax('/add_message/' + c_id + '/' + user_id,
+                var error_container = $('#send-message-form .notif');
+                error_container
+                    .hide()
+                    .text('');
+                $.ajax('/add_message/' + cId + '/' + uId,
                        {'method':'POST', 'data':request})
-                    .always(function() {
-                            var error_container = $('#conversation-pane .error');
-                            error_container
-                                .hide()
-                                .text('');
-                        })
-                       .done(function(data, status_text, xhr) {
-                               $(messageInput).val('');
-                           })
-                       .fail(function(xhr, status_text, err) {
-                            var error_container = $('#conversation-pane .error');
-                            error_container.text(err);
-                            error_container.show();
-                            })},
+                   .done(function(data, status_text, xhr) {
+                           $(messageInput).val('');
+                       })
+                   .fail(function(xhr, status_text, err) {
+                        err = xhr.responseJSON.error || status_text;
+                        var alertType = xhr.responseJSON.alert_type
+                        $('#send-message-form .notif')
+                            .text(err)
+                            .show();
+                        })},
             function(err) {console.log(err)});
 }
 
@@ -59,7 +131,7 @@ function encryptMessage(recieverId, rPublicKey, msgText) {
                                     var encryptedStr = arrayBufferViewToStr(encryptedBuffer);
                                     var encodedStr = btoa(encryptedStr);
                                     resolve({ 'user_id': recieverId,
-                                        'encoded_message': encryptedStr})},
+                                              'encoded_message': encodedStr})},
                                 function(err) {
                                     reject("Failed to encrypt message: " + err);
                                 });
@@ -90,12 +162,16 @@ function addMessages(stream, msgs) {
                     $(userImage)
                         .addClass("user-image")
                         .addClass("glyphicon glyphicon-user")
+                        .addClass('col-xs-3')
+                        .addClass('col-sm-2')
                         .addClass('col-md-1');
                     newEntry.appendChild(userImage)
 
                     var msgContent = document.createElement("div");
                     $(msgContent)
                         .addClass("message-content")
+                        .addClass("col-xs-9")
+                        .addClass("col-sm-10")
                         .addClass("col-md-11");
                     newEntry.appendChild(msgContent);
 
@@ -120,33 +196,42 @@ function addMessages(stream, msgs) {
 
 
 function pollForMessages(conversation_id, user_id, interval) {
+    var cookieData = getCookieInfo();
+    var uId = cookieData[0];
+    var cId = cookieData[1];
+    console.log("USER ID: " + uId + "CONVERSATION ID: " + cId)
     var last_message_id = $('#conversation .chat-message:last').data('mid') || null;
     request = {
             'public_key': JSON.stringify(publicJWK),
             'last_message_seen_id': last_message_id
             }
-
-    $.ajax('/status/' + conversation_id + '/' + user_id,
+    $.ajax('/status/' + cId + '/' + uId,
            {'method': 'POST', 'data':request})
-           .always(function() {
-                var error_container = $('#conversation-pane .error');
-                error_container.hide();
-                error_container.text(''); }) 
-           .error(function(rsp, status_text, err) {
-                var error_container = $('#conversation_-pane .error');
-                error_container.text(rsp.data.error || "There was a server error.")
-                error_container.show();
+          .error(function(xhr, status_text, err) {
+                var alertType = xhr.responseJSON.alert_type;
+                $('#conversation-pane .warning')
+                    .text(xhr.responseJSON.error || "There was a server error.")
+                    .addClass('alert-'.concat(alertType))
+                    .show();
                 window.setTimeout(pollForMessages, interval*1.5, conversation_id, user_id, TIMEOUT*1.5);
                 })
            .done(function(resp) {
-                console.log(resp)
+                $('#conversation-pane .warning')
+                    .hide()
+                    .text('')
+                    .removeClass('alert-danger alert-warning alert-info'); 
+                if (!resp.success) {
+                   window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
+                   return;
+                }
                 var newMessages = resp.new_messages;
                 console.log(newMessages)
                 var chatStream = document.getElementById('conversation');
                 addMessages(chatStream, newMessages);
+                inviteQueue = resp.invitations.concat(inviteQueue)
                 window.conversation_users = resp.users;
-                window.setTimeout(pollForMessages, interval, conversation_id, user_id, TIMEOUT);
-           });
+                window.setTimeout(pollForMessages, interval, cId, uId, TIMEOUT);
+        }); 
 }
 
 function beforeFormSubmit() {
@@ -175,12 +260,13 @@ function joinSuccess(data) {
                                     window.publicJWK = jwk;},
                               function() {})},
               function() {});
-    window.user_id = data.new_user_id;
-    window.c_id = data.conversation_id;
+    window.cookieKey = "chat-data-" + data.conversation_id.toString()
     $("#add-user-form").hide();
     $("#conversation-pane").show();
     $('#send-message-form').submit(sendMessage);
-    pollForMessages(c_id, user_id, TIMEOUT);
+    $('#send-msg-bar').show();
+    pollForMessages(data.conversation_id, data.user_id, TIMEOUT);
+    checkInvites(); 
 }
 
 
@@ -213,3 +299,6 @@ var publicKey = null;
 var privateKey = null;
 var publicJWK = null;
 var vector = crypto.getRandomValues(new Uint8Array(16));
+var cookieKey = null;
+var inviteQueue = [];
+var conversation_users = []

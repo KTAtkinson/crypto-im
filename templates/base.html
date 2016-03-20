@@ -4,18 +4,19 @@
     <title>chat</title>
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <link href='https://fonts.googleapis.com/css?family=Titillium+Web:200,600,900' rel='stylesheet' type='text/css'>
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
     <link rel="stylesheet" href="/static/base.css">
 </head>
 <body>
-    <nav class="navbar navbar-default navbar-fixed-top">
+    <nav class="navbar top navbar-default navbar-fixed-top">
         <div class="container-fluid">
-            <span class="col-md-3 glyphicon glyphicon-comment left"></span>
-            <span class="col-md-6 center">
+            <span class="col-xs-2 col-sm-3 glyphicon glyphicon-comment left"></span>
+            <span class="col-xs-6 center">
                 {% block header %}{% endblock %}
             </span>
-            <span class="col-md-3 right">
+            <span class="col-xs-4 col-sm-3 right">
                 <a href="" aria-label="About chat"><span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span></a>
                 <a href="" aria-label="New chat"><span class="glyphicon glyphicon glyphicon-plus" aria-hidden="true"></span></a>
             </span>
@@ -23,6 +24,9 @@
     </nav>
     <div class="container">
         {% block content %}{% endblock %}
+    </div>
+    <div class="container-fluid">
+        {% block footer %}{% endblock %}
     </div>
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="/static/bufferView.js"></script>

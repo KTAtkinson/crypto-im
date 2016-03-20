@@ -1,14 +1,28 @@
 body {
+    font-family: 'Titillium Web', sans-serif;
     padding-top:90px;
-    padding-bottom: 100px;
+    padding-bottom: 160px;
+    color: #263238,
 }
 
 .navbar {
     padding-top: 15px;
     padding-bottom: 15px;
-    font-size: 2em;
 }
 
+.navbar.top {
+    font-size: 2em;
+    font-weight: 900;
+}
+
+.navbar.bottom {
+    font-weight: 200;
+}
+
+.navbar .left {
+    padding-top: 5px;
+}
+    
 .navbar .center {
     text-align: center;
 }
@@ -18,15 +32,21 @@ body {
 }
 
 .navbar .glyphicon {
-    color: rgb(51, 122, 183)
+    color: #01579B;
+    padding-right: 5px;
 }
 
+.navbar .glyphicon:last-child {
+    padding-right: inherit;
+}
+    
 .message-content .author {
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .message-content .message {
     font-size: 1.5em;
+    font-weight: 200;
 }
     
 .chat-message .user-image {
@@ -36,10 +56,65 @@ body {
     border-radius: 10px;
     border-width: 5px;
     border-style: solid;
-    border-color: rgb(51, 122, 183);
-    color: rgb(51, 122, 183);
+    width: 70px;
 }
 
 .chat-message {
     padding-bottom: 15px;
+}
+
+.notif {
+    width: 100%;
+    padding: 15px 1em;
+    margin: 0;
+    font-weight: 600;
+}
+
+.warning {
+    position: absolute;
+    z-index: 100;
+    font-size: 1.5em;
+}
+
+.input-group-lg>.form-control, .input-group-lg>.input-group-addon, .input-group-lg>.input-group-btn>.btn {
+    height: 6em;
+    margin: 15px;
+    background: #E1F5FE
+}
+
+.input-group {
+    height: 6em;
+}
+
+textarea {
+    resize: None;
+}
+
+#join-chat-container {
+    font-size: 500px;
+    top: -50px;
+}
+
+#chat-bubble-inner {
+    font-size: 90%;
+    position: absolute;
+    top: 70px;
+    left: 35px;
+    color: white;
+}
+
+#conversation-code {
+    position: absolute;
+    font-size: 10%;
+    top: 175px;
+    left: 23px;
+    border-radius: 10px;
+}
+
+#conversation-button {
+    font-size: 10%;
+    position: absolute;
+    top: 275px;
+    left: 175px;
+    border-radius: 10px;
 }

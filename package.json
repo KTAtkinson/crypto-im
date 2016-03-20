@@ -1,0 +1,19 @@
+{
+  "name": "cryptoim",
+  "version": "1.0.0",
+  "description": "Chat client that encrypts and decrypts user messages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KTAtkinson/crypto-im.git"
+  },
+  "author": "KTAtkinson",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KTAtkinson/crypto-im/issues"
+  },
+  "homepage": "https://github.com/KTAtkinson/crypto-im#readme"
+}

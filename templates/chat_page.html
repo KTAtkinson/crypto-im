@@ -8,24 +8,27 @@
 {% block content %}
     <form id="add-user-form">
         <fieldset class="form-group">
-            <label>Name:</label>
-            <input class="form-control" name="name" type="text">
+            <input class="form-control" name="name" type="text" placeholder="What is your name?">
+        <div>This is the name you will use to chat.</div>
         </fieldset>
-        <fieldset class="form-group">
-            <label>Public key:</label>
-            <textarea class="form-control" name="pkey" placeholder="Paste your RSA public key here...."></textarea>
-        </fieldset>
-        <fieldset class="form-group">
-            <label>Private key:</label>
-            <textarea class="form-control" name="private-key" placeholder="Paste your RSA private key here..."></textarea>
-        </fieldset>
-        <span class="error" hidden></span>
+        <span class="warning alert" hidden></span>
         <input class="form-control" type="submit" value="Start chatting">
     </form>
     <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+        <div class="notif warning alert" hidden></div>
         <div id="conversation"></div>
-    <nav class="navbar navbar-default navbar-fixed-bottom">
-        <div class="container">
+</div>
+{% endblock %}
+{% block footer %}
+    <nav class="navbar bottom navbar-default navbar-fixed-bottom" id="send-msg-bar" hidden>
+            <div class="notif warning alert alert-danger" id="join-warning" hidden>
+                <span class="message">
+                    <span id="joiner-name"></span>
+                    is trying to join this chat.
+                </span>
+                <button type="button" class="btn btn-success" data-approved="1">Approve!</button>
+                <button type="button" class="btn btn-default" data-approved="0"">Reject.</button>
+            </div>
             <form id="send-message-form">
                 <div class="input-group input-group-lg">
                   <textarea class="form-control" name="message" placeholder="Send a message...."></textarea>
@@ -34,10 +37,8 @@
                         <span class="glyphicon glyphicon-send"></span>
                     </button>
                   </span>
-                </div><!-- /input-group -->
-                <span class="error" hidden></span>
+                </div>
+                <div class="notif alert alert-warning"  hidden></div>
             </form>
-        </div>
     </nav>
-    </div>
 {% endblock %}
