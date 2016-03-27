@@ -25,8 +25,19 @@ app.jinja_env.undefined = jinja2.StrictUndefined
 def get_chat_page(conversation_code):
     """Get the HTML for the chat page."""
 
+    conversation = model.Conversation.get_conversation_or_none(
+            conversation_code)
+    verified = bool(conversation)
+    if conversation:
+        c_id = str(conversation.conversation_id)
+        c_name = "chat-data-" + c_id
+        cookie = flask.request.cookies.get(c_name, None)
+        if cookie:
+           verified = VerifyCookies(flask.session, cookie)
+
     return flask.render_template('chat_page.html',
-                                 conversation_code=conversation_code)
+                                 conversation_code=conversation_code,
+                                 show_registration=not verified)
 
 
 @app.route('/join/<string:conversation_code>', methods=['POST'])

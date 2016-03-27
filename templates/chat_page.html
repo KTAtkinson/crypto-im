@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-
+f
 {% block header %}
     {{ conversation_code }}
 {% endblock %}
 
 
 {% block content %}
-    <form id="add-user-form">
+    <form id="add-user-form" {{ '' if show_registration else 'hidden' }}>
         <fieldset class="form-group">
             <input class="form-control" name="name" type="text" placeholder="What is your name?">
         <div>This is the name you will use to chat.</div>
@@ -14,13 +14,13 @@
         <span class="warning alert" hidden></span>
         <input class="form-control" type="submit" value="Start chatting">
     </form>
-    <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" hidden>
+    <div class="content" id="conversation-pane" data-ccode="{{conversation_code}}" {{ 'hidden' if show_registration else ""}}>
         <div class="notif warning alert" hidden></div>
         <div id="conversation"></div>
 </div>
 {% endblock %}
 {% block footer %}
-    <nav class="navbar bottom navbar-default navbar-fixed-bottom" id="send-msg-bar" hidden>
+    <nav class="navbar bottom navbar-default navbar-fixed-bottom" id="send-msg-bar" {{ 'hidden' if show_registration else '' }}>
             <div class="notif warning alert alert-danger" id="join-warning" hidden>
                 <span class="message">
                     <span id="joiner-name"></span>
