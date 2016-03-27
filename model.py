@@ -4,6 +4,7 @@ import datetime
 
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.exc import NoResultFound
 
 
 db = SQLAlchemy()
@@ -72,6 +73,14 @@ class Conversation(db.Model):
     conversation_id = db.Column(db.Integer, autoincrement=True,
                                 primary_key=True)
     conversation_code = db.Column(db.String(20))
+
+    @classmethod
+    def get_conversation_or_none(cls, conversation_code):
+        try:
+            return cls.query.filter_by(
+                    conversation_code=conversation_code).one()
+        except NoResultFound:
+            return None
 
 
 class Message(db.Model):
