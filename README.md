@@ -25,6 +25,7 @@ CryptoIM is built on the following technologies and libraries:
 
 First you'll need:
 * [pip] - In order to find install all the python dependencies.
+* [PostgreSQL] - The database software necessary to save conversation and user data.
 * [virtualenv] (recommended) - To keep all the dependancies in order
 
 To get the server running:
@@ -41,20 +42,35 @@ To get the server running:
     $ git clone https://github.com/KTAtkinson/crypto-im
     ```
 
-4. Install python depencencies in your virtual env:
+4. Add PostgreSQL to your path.
+
+5. Create the chat-client database:
+  '''sh
+  $ createdb chat-client
+  '''
+
+6. Create database tables:
+  '''sh
+  $ <path_to_project>/model.py
+  >>>
+  '''
+
+7. In the interpreter use db.create_all() to create all the tables.
+
+8. Install python depencencies in your virtual env:
     ```sh
     $ pip install -r <path_to_project>/requirements.txt
     ```
-5. Run the server:
+9. Run the server:
     ```sh
     $ python <path_to_project>/server.py
     ```
 
-6. Navigate to localhost:5000 in your web browser.
+10. Navigate to localhost:5000 in your web browser.
   ![Image of front page]
   (https://github.com/KTAtkinson/crypto-im/blob/master/docs/img/Screen%20Shot%202016-03-08%20at%205.53.16%20PM.png)
 
-7. To stop the server type Ctrl+c in your terminal.
+11. To stop the server type Ctrl+c in your terminal.
 
 In order to have a conversation between two different users they must be in different browser sessions. The easiest way to do this is to have one window open in your session and another open in an incognito/in-private window.
 
