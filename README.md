@@ -45,15 +45,15 @@ To get the server running:
 4. Add PostgreSQL to your path.
 
 5. Create the chat-client database:
-  '''sh
-  $ createdb chat-client
-  '''
+    ```sh
+    $ createdb chat-client
+    ```
 
 6. Create database tables:
-  '''sh
-  $ <path_to_project>/model.py
-  >>>
-  '''
+    ```sh
+    $ <path_to_project>/model.py
+    >>>
+    ```
 
 7. In the interpreter use db.create_all() to create all the tables.
 
